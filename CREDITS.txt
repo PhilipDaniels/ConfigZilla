@@ -1,0 +1,16 @@
+The XmlDeserializeConfigSectionHandler class for easy deserialization of
+custom ConfigSections is from Mark Focas at
+  http://www.codeproject.com/Articles/6730/Custom-Objects-From-the-App-Config-file
+  via http://codecutout.com/xml-deserialization-from-app-config
+
+The code to examine the currently running MSBuild project and extract its
+properties was based on code from http://simoncropp.com/getprojectpathanmsbuildtask
+and http://simoncropp.com/howtoaccessbuildvariablesfromanmsbuildtask.
+
+The class GUIConsoleWriter which allows WinForms apps to write to the
+console window, which is used by ConfigZilla.Encrypter when run in command
+line mode, is from this Stack Overflow question:
+  http://stackoverflow.com/questions/14199850/writing-output-to-the-console-from-a-c-sharp-winforms-application
+
+
+

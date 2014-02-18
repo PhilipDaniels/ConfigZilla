@@ -1,0 +1,68 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- This .targets file is the one that is included in your .csproj (down the bottom of the file)
+       when you add ConfigZilla to a project using NuGet. All the hard work of creating the ConfigZilla.xslt
+       has been done by this point, all that remains is to apply it to your *.template.config files. -->
+
+  <!-- Import user settings file if it exists -->
+  <Import Project="$(MSBuildProjectDirectory)\ConfigZilla.user" Condition="Exists('$(MSBuildProjectDirectory)\ConfigZilla.user')"/>
+  
+  <PropertyGroup>
+    <!-- TODO: Default SolutionDir for builds outside Visual Studio. Needed? -->
+    <SolutionDir Condition="'$(SolutionDir)'=='' Or '$(SolutionDir)'=='*Undefined*'">..\</SolutionDir>
+    
+    <!-- The name of the project where we expect to find the transforms -->
+    <czConfigProject Condition="'$(czConfigProject)'==''">ConfigZilla</czConfigProject>
+
+    <!-- Where that project will be located -->
+    <czConfigFolder Condition="'$(czConfigFolder)'==''">$(SolutionDir)$(czConfigProject)\</czConfigFolder>
+
+    <!-- Where the transform file will be located after build.
+         TODO: This doesn't work if the Config project has had its output directory changed... -->
+    <czTransformFile Condition="'$(czTransformFile)'==''">$(czConfigFolder)bin\$(Configuration)\ConfigZilla.xslt</czTransformFile>
+
+    <!-- Q: What files do we look to transform? -->
+    <czInputFilePattern Condition="'$(czInputFilePattern)'==''">.template.config</czInputFilePattern>
+
+    <!-- A: By default *.template.config located in the root. Use **\*.template.config to search recursively -->
+    <czTemplateFilePattern Condition="'$(czTemplateFilePattern)'==''">*$(czInputFilePattern)</czTemplateFilePattern>
+
+    <!-- We will rename *.template.config to *.config -->
+    <czOutputFilePattern Condition="'$(czOutputFilePattern)'==''">.config</czOutputFilePattern>
+  </PropertyGroup>
+  
+  
+  <!-- Build an ItemGroup of all the templates we need to process, but only if it has not been
+       set by the user yet. -->
+  <ItemGroup Condition="'@(czTemplates)'==''">
+    <czTemplates Include="$(czTemplateFilePattern)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_czTemplates Include="@(czTemplates)">
+      <!-- The OutputFile attribute is the name of the file that will be written by the Xslt transform. 
+           TODO: Surely there is an easier way to do this without introducing a dummy ItemGroup? -->
+      <OutputFile>$([System.String]::Copy('%(FullPath)').Replace('$(czInputFilePattern)', '$(czOutputFilePattern)'))</OutputFile>
+    </_czTemplates>
+  </ItemGroup>
+
+
+  <Target Name="czProcessTemplates" BeforeTargets="BeforeBuild" Condition="'@(_czTemplates)'!=''">
+    <CallTarget Targets="czDump"/>
+    <XslTransformation XmlInputPaths="%(_czTemplates.FullPath)" 
+                       XslInputPath="$(czTransformFile)"
+                       OutputPaths="%(_czTemplates.OutputFile)"
+                       />
+  </Target>
+
+  
+  <Target Name="czDump">
+    <Message Text="czInputFilePattern = $(czInputFilePattern)" Importance="normal"/>
+    <Message Text="czOutputFilePattern = $(czOutputFilePattern)" Importance="normal"/>
+    <Message Text="czTemplateFilePattern = $(czTemplateFilePattern)" Importance="Normal"/>
+    <Message Text="czTemplates = @(czTemplates)" Importance="Normal"/>
+    <Message Text="czConfigProject = $(czConfigProject)" Importance="Normal"/>
+    <Message Text="czConfigFolder = $(czConfigFolder)" Importance="Normal"/>
+    <Message Text="czTransformFile = $(czTransformFile)" Importance="Normal"/>
+  </Target>
+</Project>
