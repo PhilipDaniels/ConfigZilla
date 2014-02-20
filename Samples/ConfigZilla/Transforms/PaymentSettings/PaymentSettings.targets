@@ -1,0 +1,14 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- No condition and processed first means this Property Group specifies the defaults -->
+    <payPaymentSystem>PaypalTest</payPaymentSystem>
+    <payURL>https://paypaltest.example.com</payURL>
+    <payTimeout>20</payTimeout>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <payPaymentSystem>Wordlpay</payPaymentSystem>
+    <payURL>https://worldpay.releasemode.example.com</payURL>
+    <payTimeout>30</payTimeout>
+  </PropertyGroup>
+</Project>
