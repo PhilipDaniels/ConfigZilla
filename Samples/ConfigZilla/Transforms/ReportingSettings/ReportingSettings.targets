@@ -1,0 +1,14 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- No condition and processed first means this Property Group specifies the defaults -->
+    <rsPageSize>11</rsPageSize>
+    <rsServer>http://Debug.example.com</rsServer>
+    <rsRecipientEmail>phil@Debug.example.com</rsRecipientEmail>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <rsPageSize>20</rsPageSize>
+    <rsServer>http://Release.example.com</rsServer>
+    <rsRecipientEmail>phil@Release.example.com</rsRecipientEmail>
+  </PropertyGroup>
+</Project>
