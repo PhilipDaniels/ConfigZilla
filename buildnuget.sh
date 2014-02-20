@@ -8,6 +8,7 @@
 
 # Create the nuget package structure.
 cp ./ConfigZilla.Tasks/bin/Release/ConfigZilla.Tasks.dll ./nuget/tools
+rm -rf ./nuget/tools/ConfigZilla
 cp -R ./ConfigZilla ./nuget/tools
 rm -rf ./nuget/tools/ConfigZilla/bin
 rm -rf ./nuget/tools/ConfigZilla/obj
