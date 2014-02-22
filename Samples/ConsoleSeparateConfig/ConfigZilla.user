@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+	<!-- Use a recursive search so we pick up the template in 'SubFolder' -->
+    <czTemplateFilePattern>**\*.template.config</czTemplateFilePattern>
+  </PropertyGroup>
+  
+</Project>

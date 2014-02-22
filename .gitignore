@@ -9,6 +9,9 @@ ConfigZilla.*.nupkg
 *.user
 *.sln.docstates
 
+# Except for MSBuild user files, sigh.
+!ConfigZilla.user
+
 # Build results
 
 [Dd]ebug/
