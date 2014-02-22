@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- This .targets file is the one that is included in your .csproj (down the bottom of the file)
+  <!-- This targets file is the one that is included in your .csproj (down the bottom of the file)
        when you add ConfigZilla to a project using NuGet. All the hard work of creating the ConfigZilla.xslt
        has been done by this point, all that remains is to apply it to your *.template.config files. -->
 
