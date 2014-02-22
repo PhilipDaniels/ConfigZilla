@@ -7,12 +7,11 @@
 
 
 # Create the nuget package structure.
-cp ./ConfigZilla.Tasks/bin/Release/ConfigZilla.Tasks.dll ./nuget/tools
 rm -rf ./nuget/tools/ConfigZilla
 cp -R ./ConfigZilla ./nuget/tools
 rm -rf ./nuget/tools/ConfigZilla/bin
 rm -rf ./nuget/tools/ConfigZilla/obj
-
+cp ./ConfigZilla.Tasks/bin/Release/ConfigZilla.Tasks.dll ./nuget/tools/ConfigZilla
 
 
 # Increment the build number...actually not necessary during testing cycle

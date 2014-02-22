@@ -38,8 +38,8 @@
   <!-- Yes! Recursive imports work! -->
   <Import Project="$(czTargetFilePattern)"/>
 
-  <UsingTask AssemblyFile="ASSEMBLYHERE" TaskName="CreateMergedXslt" />
-  <UsingTask AssemblyFile="ASSEMBLYHERE" TaskName="GitInfo" />
+  <UsingTask AssemblyFile="$(MSBuildProjectDirectory)\ConfigZilla.Tasks.dll" TaskName="CreateMergedXslt" />
+  <UsingTask AssemblyFile="$(MSBuildProjectDirectory)\ConfigZilla.Tasks.dll" TaskName="GitInfo" />
   
   <Target Name="CreateConfigZillaXslt" BeforeTargets="BeforeBuild"
           Inputs="@(czXsltDependencies)" Outputs="$(czMergedXslt)">
@@ -79,11 +79,6 @@
     <Message Text="czTargetFiles = @(czTargetFiles)" Importance="$(czLogLevel)" />
     <Message Text="czXsltFiles = @(czXsltFiles)" Importance="$(czLogLevel)" />
     <Message Text="czXsltDependencies = @(czXsltDependencies)" Importance="$(czLogLevel)" />
-    
-    
-    <Message Text=" " Importance="$(czLogLevel)" />
-    <Message Text="appSetting1 = $(appSetting1)" Importance="$(czLogLevel)" />
-    <Message Text="csConnStr1 = $(csConnStr1)" Importance="$(czLogLevel)" />
     <Message Text=" " Importance="$(czLogLevel)" />
   </Target>
 </Project>

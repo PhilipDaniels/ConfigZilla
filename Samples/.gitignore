@@ -7,4 +7,6 @@
 [Ll]og4net.config
 [Rr]eportingSettings.config
 [Ss]omething.config
-[Ww]eb.config
+# Care! MVC has nested web.configs int its views folder.
+# Only ignore the one in the root
+/WebApp/[Ww]eb.config

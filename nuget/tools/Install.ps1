@@ -14,7 +14,7 @@ function Main
 	else
 	{
 		CopyConfigZillaFolder
-		UpdateAssemblyReferenceInConfigZillaProject($toolsPath)
+		# UpdateAssemblyReferenceInConfigZillaProject($toolsPath)
 	}
 
 	if (ConfigZillaProjectExistsInSolution)
