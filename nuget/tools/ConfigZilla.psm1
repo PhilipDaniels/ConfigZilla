@@ -91,6 +91,7 @@ function AddConfigZillaProjectAsReference
 
 	$ConfigZillaProject = ConfigZillaProjectReference
 	$CurrentProject.Object.References.AddProject($ConfigZillaProject)
+    Write-Host "ConfigZilla added as a reference to $($CurrentProject.Name)"
 }
 
 function RemoveConfigZillaProjectReference
@@ -101,6 +102,7 @@ function RemoveConfigZillaProjectReference
     )
 
 	$CurrentProject.Object.References | Where-Object { $_.Name -eq 'ConfigZilla' } | ForEach-Object { $_.Remove() }
+    Write-Host "ConfigZilla reference removed from $($CurrentProject.Name)"
 }
 
 Export-ModuleMember Get-SolutionDir, ConfigZillaDestFolder, ConfigZillaProjectName, ConfigZillaDestFolderExists, `

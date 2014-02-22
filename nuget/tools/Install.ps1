@@ -14,6 +14,8 @@ function Main
 	else
 	{
 		CopyConfigZillaFolder
+		# This is no longer necessary because the ConfigZilla.Tasks.dll assembly is
+		# copied into the ConfigZilla folder during the NuGet build process.
 		# UpdateAssemblyReferenceInConfigZillaProject($toolsPath)
 	}
 
@@ -24,8 +26,10 @@ function Main
 	else
 	{
 		AddConfigZillaProjectToSolution
-		AddConfigZillaProjectAsReference($project)
 	}
+
+
+	AddConfigZillaProjectAsReference($project)
 }
 
 Main

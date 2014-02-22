@@ -12,23 +12,41 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Dev.Europe.London|Any CPU = Dev.Europe.London|Any CPU
+		Dev.Europe.Madrid|Any CPU = Dev.Europe.Madrid|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Dev.Europe.London|Any CPU.ActiveCfg = Dev.Europe.London|Any CPU
+		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Dev.Europe.London|Any CPU.Build.0 = Dev.Europe.London|Any CPU
+		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Dev.Europe.Madrid|Any CPU.ActiveCfg = Dev.Europe.Madrid|Any CPU
+		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Dev.Europe.Madrid|Any CPU.Build.0 = Dev.Europe.Madrid|Any CPU
 		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D04BEC0E-0747-4655-BA65-B3C882584E3D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Dev.Europe.London|Any CPU.ActiveCfg = Dev.Europe.London|Any CPU
+		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Dev.Europe.London|Any CPU.Build.0 = Dev.Europe.London|Any CPU
+		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Dev.Europe.Madrid|Any CPU.ActiveCfg = Dev.Europe.Madrid|Any CPU
+		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Dev.Europe.Madrid|Any CPU.Build.0 = Dev.Europe.Madrid|Any CPU
 		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A407BD4-2755-4B15-89E4-3BE925AEFEB7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Dev.Europe.London|Any CPU.ActiveCfg = Dev.Europe.London|Any CPU
+		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Dev.Europe.London|Any CPU.Build.0 = Dev.Europe.London|Any CPU
+		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Dev.Europe.Madrid|Any CPU.ActiveCfg = Dev.Europe.Madrid|Any CPU
+		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Dev.Europe.Madrid|Any CPU.Build.0 = Dev.Europe.Madrid|Any CPU
 		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93422D3E-17DB-4EF8-9027-E1FCE2735F00}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Dev.Europe.London|Any CPU.ActiveCfg = Dev.Europe.London|Any CPU
+		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Dev.Europe.London|Any CPU.Build.0 = Dev.Europe.London|Any CPU
+		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Dev.Europe.Madrid|Any CPU.ActiveCfg = Dev.Europe.Madrid|Any CPU
+		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Dev.Europe.Madrid|Any CPU.Build.0 = Dev.Europe.Madrid|Any CPU
 		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66892008-D96A-40D0-99FC-6CAC3F90E770}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

@@ -10,5 +10,16 @@
     <csConnStr1>Data Source=PRDSQL;Initial Catalog=Db1;Integrated Security=True;</csConnStr1>
     <csConnStr2>Data Source=PRDSQL;Initial Catalog=Db2;Integrated Security=True;</csConnStr2>
   </PropertyGroup>
+
+  <!-- This is a call to String.Contains. You can use this technique to create "hierarchies" of build configurations.
+       See http://msdn.microsoft.com/en-us/library/dd633440.aspx -->
+  <PropertyGroup>
+    <IsEurope>$(Configuration.Contains("Europe"))</IsEurope>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsEurope)'=='true'">
+    <csConnStr1>Data Source=DEVSQL_EUROPE;Initial Catalog=Db1;Integrated Security=True;</csConnStr1>
+    <csConnStr2>Data Source=DEVSQL_EUROPE;Initial Catalog=Db2;Integrated Security=True;</csConnStr2>
+  </PropertyGroup>
   
 </Project>

@@ -49,17 +49,18 @@ namespace ConfigZilla.Tasks
             Log.LogMessage
                 (
                 LoggingLevel,
-                "Merged Xslt file created, {0} properties replaced in {1} xslt files, {2} characters.",
+                "Merged Xslt file created, {0} properties replaced in {1} xslt files, {2} characters written.",
                 NumPropertiesReplaced, XsltFiles.Count(), contents.Length
                 );
 
             if (MissedProperties.Count > 0)
             {
-                Log.LogWarning
-                    (
-                    "No replacements found for these properties: " +
-                    String.Join(", ", MissedProperties.ToArray())
-                    );
+                MissedProperties.Sort();
+                Log.LogWarning("No replacements found for these properties:");
+                foreach (string msg in MissedProperties)
+                {
+                    Log.LogWarning("  " + msg);
+                }
             }
 
             return true;
@@ -148,15 +149,15 @@ namespace ConfigZilla.Tasks
                 return input;
             }
 
-            string replacedText = TemplateVariableRegex.Replace(input, m => PropertyReplacer(m, properties));
+            string replacedText = TemplateVariableRegex.Replace(input, m => PropertyReplacer(m, file, properties));
             return replacedText;
         }
 
-        string PropertyReplacer(Match match, IDictionary<string, string> properties)
+        string PropertyReplacer(Match match, string file, IDictionary<string, string> properties)
         {
             // Matches come in the form "$(asSetting1)"
             string propertyName = match.Value.Substring(2, match.Value.Length - 3);
-            string message = "Testing for property " + propertyName + "...";
+            string message = String.Format("Testing for property {0} in file {1}...", propertyName, file);
 
             string replacement;
             if (properties.TryGetValue(propertyName, out replacement))
@@ -170,9 +171,10 @@ namespace ConfigZilla.Tasks
             {
                 message += "no replacement found.";
                 Log.LogMessage(LoggingLevel, message);
-                if (!MissedProperties.Contains(propertyName))
+                string missedMessage = String.Format("$({0}) in file {1}", propertyName, file);
+                if (!MissedProperties.Contains(missedMessage))
                 {
-                    MissedProperties.Add(propertyName);
+                    MissedProperties.Add(missedMessage);
                 }
                 return match.Value;
             }
