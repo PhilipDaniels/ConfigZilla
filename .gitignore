@@ -21,6 +21,10 @@ build/
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !nuget/build/
 
+# Enable packages in our samples folder so that it will compile straight after a clone.
+# Really we are trying to include the "build" folder within the ConfigZilla folder.
+!Samples/packages/**/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

@@ -5,8 +5,7 @@
     <version>0.1.0</version>
     <authors>Philip Daniels</authors>
     <owners>Philip Daniels</owners>
-    <description>ConfigZilla is a solution for applying transformations to *.config files.
-    Also provides a GUI for easy encrypting of config files.</description>
+    <description>ConfigZilla is a solution for applying transformations to *.config files across an entire solution in a quick and DRY-ish manner. It also provides a GUI for easy encrypting and decrypting of config files.</description>
     <projectUrl>https://github.com/PhilipDaniels/ConfigZilla/</projectUrl>
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <iconUrl>http://www.philipdaniels.com/ConfigZilla/images/icon.png</iconUrl>
