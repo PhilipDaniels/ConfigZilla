@@ -28,15 +28,18 @@ ul
 h2 Setup
 p.
     It's a good idea to keep the log4net config in a separate file because it tends
-    to be rather long. Remember to add the [assembly] attribute
+    to be rather long. Remember to add the [assembly] attribute as follows (another benefit
+    of doing it this way is that you don't need the "configSource" setting in your
+    app.config file).
 
 pre
     code(class="cs").
         [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4Net.config", Watch = true)]
 
 p.
-    In web apps it seems to be necessary to also add this into your Application_Start()
-    event:
+    In web apps, set the build type of the log4net file to "Content", this will leave it in the
+    root of your website rather than copying it into the bin folder. It seems to be necessary to
+    add this into your Application_Start() event: 
 
 pre
     code(class="cs").
@@ -52,7 +55,16 @@ pre
         static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 p.
+    If you are having trouble getting log4net to work, add the following app setting to
+    your config file. This turns on log4net's internal debugging. 
 
+pre
+    code(class="xml").
+        <appSettings>
+            <add key="log4net.Internal.Debug" value="true"/>
+        </appSettings>
+
+p.
 
 h2 Further reading
 ul
