@@ -1,0 +1,51 @@
+---
+layout: default
+title: Setting up .gitignore
+---
+
+h1 #{document.title}
+
+p.
+    After you have installed ConfigZilla and started to use it to generate your
+    config files you will want to stop Git (or TFS) from tracking the config
+    files because they are now <em>build products</em> rather than source files.
+    Furthermore, their contents will be changing every time you do a build
+    because the current time is included in the <a href="doccomments.html">document comment</a>.
+    So you should add web.config, app.config or whatever.config to your .gitignore
+    file.
+
+pre
+    code(class="ini").
+        [Aa]pp.config
+        [Aa]ppSettings.config
+        [Cc]onnectionStrings.config
+        [Ll]og4net.config
+        [Rr]eportingSettings.config
+        [Ss]omething.config
+        # Care! MVC has nested web.configs int its views folder.
+        # Only ignore the one in the root
+        /MyWebApp/[Ww]eb.config
+
+p.
+    <strong>Care needed!</strong> As the comment in the file shows, there
+    can be web.configs in folders other than the root. If you <em>aren't</em>
+    generating them from templates then you should continue to track them.
+    Web applications are the only ones I know of where this happens : a newly
+    created MVC 4 app has a Web.config under its Views folder and the application
+    won't run without it. After setting up your .gitignore it is a good idea to
+    commit everything and clone your repo to a new location and check that
+    everything is still working.
+
+h2 Stopping tracking after-the-fact
+p.
+    If your config files have already gotten into your git repository then you
+    will need to add them .gitignore as above and stop tracking them. Issue
+    the following command:
+
+pre
+    code(class="ini").
+        git rm --cached <filename>
+
+p.
+
+    

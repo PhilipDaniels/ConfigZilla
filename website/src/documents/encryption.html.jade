@@ -1,0 +1,73 @@
+---
+layout: default
+title: Encrypting your .config files
+---
+
+h1 #{document.title}
+
+p.
+    If your config files contain sensitive information such as SQL passwords
+    then it is a good idea to encrypt them. You can use the command line tool
+    aspnet_regiis.exe to do this but ConfigZilla also supplies a graphical
+    application that you can use to encrypt, decrypt, and view the encrypted
+    settings. It is called "ConfigZilla.Encrypter" and is available in the
+    <a href="https://github.com/PhilipDaniels/ConfigZilla">git repository</a>
+    (it is not downloaded when you install ConfigZilla via NuGet, you need to
+    clone the repo). Encrypting your config files has no impact on your
+    application; .Net knows how to automatically decrypt sections and will
+    present the unencrypted values to your application.
+
+p.
+    When you run the app (it will request admin privileges) the following
+    window appears:
+
+img(src="images/enc_start.png")
+
+p.
+    Type or browse for the config file you want to view. <strong>Even if you
+    are using separate config files you should always enter the name of the
+    main config file here.</strong> Also enter the name of the section you
+    are interested in, for example "appSettings". The file will be loaded
+    and down the left you will see the configuration file as it exists on disk.
+    This may be encrypted. On the right hand side you will see the section
+    in question, decrypted if necessary.
+
+img(src="images/enc_read.png")
+
+p.
+    If you are using separate config files, as this example is, then you will
+    see a tab called "Sub-config file" appear. This shows the contents of that
+    file, AppSettings.config in this case:
+
+img(src="images/enc_appsettings_un.png")
+
+p.
+    Hitting the "Encrypt Section" button will encrypt it:
+
+img(src="images/enc_appsettings_enc.png")
+
+p.
+    The file is immediately re-read from disk so that you can verify that it
+    has worked correctly. Note that the right hand side still shows the
+    unencrypted values.
+
+
+h2 Command line mode
+p.
+    Encrypter also has a simple to use command line mode so you can use it
+    during automatic deploys. The options are:
+
+pre
+    code(class="ini").
+        -r section file     read the section and display in plain text
+        -e section file     encrypt the section
+        -d section file     decrypt the section
+
+h2 TODO
+ul
+    li.
+        Encrypter always uses RSA and does not support DPAPI (yet).
+    li.
+        Encrypter does not allow keys to be exported/imported, so you can only
+        use it on the deployment machine. In other words, it is not possible to
+        pre-encrypt your config files before you deploy them.

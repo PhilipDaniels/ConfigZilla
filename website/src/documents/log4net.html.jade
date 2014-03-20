@@ -1,0 +1,63 @@
+---
+layout: default
+title: Setting up Log4Net
+---
+
+h1 #{document.title}
+p.
+    <a href="http://logging.apache.org/log4net/">Log4Net</a> is a great logging system
+    but can be a little tricky
+    to setup. The ConfigZilla samples contain a log4net.template.config
+    which you can copy-and-paste into your own projects. It gives you 3
+    appenders (i.e. places where the log messages go).
+
+ul
+    li.
+        A <a href="http://logging.apache.org/log4net/release/sdk/log4net.Appender.DebugAppender.html">DebugAppender</a> which logs messages to the Visual Studio
+        debug window.
+    li.
+        A <a href="http://logging.apache.org/log4net/release/sdk/log4net.Appender.RollingFileAppender.html">RollingFileAppender</a> which logs messages to a file
+        whose name is based on the name of the application, for example
+        "myapp.exe.2014-03-12.log".
+    li.
+        A <a href="http://logging.apache.org/log4net/release/sdk/log4net.Appender.AdoNetAppender.html">SqlAppender</a>
+        which logs to a database. This last one is disabled in the samples
+        because you don't have the database setup, but the log4net.template.config
+        file contains the instructions for creating the logging table.
+
+h2 Setup
+p.
+    It's a good idea to keep the log4net config in a separate file because it tends
+    to be rather long. Remember to add the [assembly] attribute
+
+pre
+    code(class="cs").
+        [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4Net.config", Watch = true)]
+
+p.
+    In web apps it seems to be necessary to also add this into your Application_Start()
+    event:
+
+pre
+    code(class="cs").
+        log4net.Config.XmlConfigurator.Configure(new FileInfo(Server.MapPath("~/log4net.config")));
+
+p.
+    Create a logger by just copying and pasting this line. It uses fully
+    qualified type names and reflection so you don't need to add any "using" statements
+    or edit the logger name:
+
+pre
+    code(class="cs").
+        static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+p.
+
+
+h2 Further reading
+ul
+    li.
+        A <a href="http://www.codeproject.com/Articles/140911/log4net-Tutorial">good tutorial</a>.
+    li.
+        <a href="http://www.beefycode.com/post/Log4Net-Tutorials-and-Resources.aspx">This guy</a>
+        has a good set of articles on log4net.

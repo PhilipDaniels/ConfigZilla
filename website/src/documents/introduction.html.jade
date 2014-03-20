@@ -1,0 +1,120 @@
+---
+layout: default
+title: Introduction
+---
+
+h1 #{document.title}
+
+p.
+  ConfigZilla is a tool for streamlining the management of those pesky .config
+  files in .Net projects. The key to the ConfigZilla approach is that it creates
+  a project called "ConfigZilla" in your solution, and this project then becomes
+  the central location in which you <em>specify the values</em> for your config
+  settings and <em>create classes to access those settings</em>.
+
+img(src="images/intro_slnexp.png" alt="Solution Explorer with the ConfigZilla project.")
+
+p.
+  The design of ConfigZilla has been motivated by scalability: I continually
+  asked myself the question "how will this work if I have 100 settings in 100
+  projects with 100 different configurations?". Imagine needing to add or
+  remove a connection string to all those projects, or needing to redirect your
+  log4net logs for all websites and EXEs to a common folder, or to create
+  bindings for a collection of WCF services that's different in each website.
+  ConfigZilla can handle such situations with ease.
+
+p.
+  ConfigZilla uses <a href="http://msdn.microsoft.com/en-us/library/0k6kkbsd.aspx">MSBuild</a>
+  and <a href="http://en.wikipedia.org/wiki/XSLT">XSL Transformations</a> to
+  work its magic. Both of these are standard technologies with wide
+  applicability. They are a little esoteric compared to C# and HTML, but most tasks
+  you will need to do can be handled with "cookie cutter" recipes, indeed when you
+  install ConfigZilla into your project it will create a project that includes some
+  "out of the box" ready-to-run examples. I believe most developers will be
+  able to handle 95% of their requirements with "cut-and-paste-and-edit" and
+  a minimum of thinking...
+
+h3 A 30-second Intro to the ConfigZilla project
+p A C# class for type-safe access to your settings. Use this throughout your solution:
+pre
+  code(class="cs").
+    namespace CZ
+    {
+        /// <summary>
+        /// Class to return the AppSettings.
+        /// </summary>
+        public static class AppSettings
+        {
+            public static string Setting1
+            {
+                get { return ConfigurationManager.AppSettings["Setting1"]; }
+            }
+        }
+    }
+
+p An MSBuild .targets file to set property values depending upon $(Configuration):
+pre
+    code(class="xml").
+        <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+          <PropertyGroup>
+            <!-- No condition and processed first means this Property Group specifies the defaults -->
+            <appSetting1>Value1Default</appSetting1>
+          </PropertyGroup>
+
+          <PropertyGroup Condition="'$(Configuration)'=='Release'">
+            <appSetting1>Value1Release</appSetting1>
+          </PropertyGroup>
+        </Project>
+
+p.
+    An XSLT file to set the setting to the value (all these files are merged then applied to
+    the *.template.config files in your projects):
+
+pre
+    code(class="xml").
+      <xsl:template match="/configuration/appSettings/add[@key='Setting1']|/appSettings/add[@key='Setting1']">
+        <add key="Setting1" value="$(appSetting1)" />
+      </xsl:template>
+
+      <!-- Replace <AppSettingsBlock /> with the whole set -->
+      <xsl:template match="AppSettingsBlock" xml:space="preserve">
+        <appSettings>
+          <add key="Setting1" value="$(appSetting1)" />
+          <add key="Setting2" value="$(appSetting2)" />
+        </appSettings>
+      </xsl:template>
+
+h3 Other Features
+ul
+  li.
+    If you use the <a href="http://msdn.microsoft.com/en-us/library/system.configuration.sectioninformation.configsource(v=vs.110).aspx">configSource</a> property to break up your app.config into
+    smaller files ConfigZilla can handle it just as easily as if you were
+    storing everything in one file. Furthermore, <em>if you decide to change
+    approaches</em> then you won't need to change anything in your ConfigZilla
+    project.
+  li.
+    By default ConfigZilla only searches for files named *.template.config
+    in the root of your project. But you can make this search recursive or
+    change the filename pattern, or even explicitly pick some files to 
+    transform.
+  li.
+    Works with F5 debugging and web publication.
+  li.
+    Adds a comment to your .config files saying when/who/where they were
+    generated, and what solution configuration was in effect. Also adds a
+    comment with the last Git hash and the effective branch. You can suppress
+    these comments if you want.
+  li.
+    Includes a simple WinForms application that can be used to encrypt and
+    decrypt individual sections of your .config file. No more need to remember
+    exactly where aspnet_regiis.exe is, just press the big friendly button!
+
+img(src="images/intro_encrypter.png", alt="ConfigZilla.Encrypter Screenshot")
+
+h3 Dependencies
+p.
+  ConfigZilla is built on MSBuild v4.0, which shipped with Visual Studio 2010
+  and Microsoft .Net 4, so most modern machines should have it. Apart from
+  that ConfigZilla is completely self contained, so once installed into a
+  solution the it should compile anywhere, including any continuous
+  integration environment that supports MSBuild. 

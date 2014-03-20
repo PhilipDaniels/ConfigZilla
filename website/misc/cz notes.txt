@@ -1,0 +1,2 @@
+The font in the ConfigZilla logos is Verdana with medium hinting.
+AA is off for the favicon, but on for the main logo.

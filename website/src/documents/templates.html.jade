@@ -1,0 +1,127 @@
+---
+layout: default
+title: Creating .template.config files
+---
+
+h1 #{document.title}
+
+p.
+    ConfigZilla applies your Xsl transforms to your .template.config to create
+    the finished .config file. So how do you make a .template.config? Just
+    copy an existing .config file and rename it as .template.config. Set
+    its <strong>Build Action</strong> to "None" and <strong>Copy to Output
+    Directory</strong> to "Do not copy". There will typically be two types of
+    data in your template file: things that are fixed and never change (the
+    boilerplate in a web.config for example), and things that you will be
+    replacing with ConfigZilla. For the latter, I like to clean up my template
+    by setting them to blank strings. For example, here is part of a template
+    from the ConfigZilla samples:
+
+pre
+    code(class="xml").
+        <appSettings>
+            <add key="Setting1" value=""/>
+            <add key="Setting2" value=""/>
+        </appSettings>
+
+        <ConnectionStringsBlock />
+        <reportingSettings PageSize="" Server="" RecipientEmail="" />
+        <PaymentSettingsBlock />
+
+p.
+    The "value" and "PageSize" are completely blank. It's a good idea to do
+    this because it removes any doubt over where values in your generated
+    app.config come from: they can't have come from your template, they must
+    have come from your transformations.
+
+p.
+    This example demonstrates templating individual settings (in the appSettings
+    block) but also inserting a complete section, the ConnectionStringsBlock
+    will be replaced with something that looks like this:
+
+pre
+    code(class="xml").
+        <connectionString>
+            <add name="...." conenctionString="..." etc. />
+            <add name="...." etc. />
+            <add name="...." etc. />
+        </connectionString>
+
+p.
+    If you typically need all the connection strings across all your projects
+    this makes it very simple to add a new one, you just need to do it in the
+    ConfigZilla project and every project that uses it will automatically have
+    access to the new connection string. This is a great example of how ConfigZilla
+    enables DRYish configuration.
+
+h2 Using separate config files
+p.
+    The .Net configuration system has a feature which allows you to break your
+    app/web.config file up into smaller, separate files. Whether you find this
+    more convenient or not depends on how large your file is getting. To
+    break out a section into its own file, you use the 
+    <a href="http://msdn.microsoft.com/en-us/library/system.configuration.sectioninformation.configsource(v=vs.110).aspx">configSource</a> property. In your main config file (app.config for example)
+    write the following:
+
+pre
+    code(class="xml").
+        <reportingSettings configSource="ReportingSettings.config" />
+
+p.
+    This will cause this section to be loaded from the file ReportingSettings.config
+    (you should set this file's Copy action to "Copy if newer" to ensure it
+    gets into your bin directory). The content of the file is very simple:
+
+pre
+    code(class="xml").
+        <reportingSettings PageSize="" Server="" RecipientEmail="" />
+
+p.
+    Note that after moving it into a separate file the section is <strong>NOT</strong>
+    nested under the &lt;configurationSettings&gt; node. This is the reason for
+    the use of the "|" in the <a href="transforms.html">xslt transformation file</a>: it
+    ensures that your settings will be replaced whether you keep them in
+    the main file or in separate files.
+        
+p.
+    In order for this to work the section you are trying to break out must
+    have a <em>handler</em> type defined; connectionStrings and appSettings
+    already do, and any custom types you define for app settings, like the
+    ReportingSettings used above also have them, but you can't expect to
+    shift arbitrary blocks of text out of your config files and expect it
+    to work.    
+
+p.
+    <a href="encryption.html">Encryption</a> works fine with separate config
+    files: the .Net configuration system is smart enough to encrypt the
+    separate file if you ask it to encrypt a section that you have moved out.
+
+p.
+    The Samples solution contains a Console app which uses several separate
+    config files.
+
+h2 Searching for templates in sub-folders
+p.
+    By default ConfigZilla only searches for templates in the root of your
+    project but it is easy to change this by overriding the search pattern.
+    Create a plain text file called ConfigZilla.user in the root of your
+    project (the one with your templates, not the ConfigZilla project) and
+    add the following code to it. "**" is the MSBuild syntax for "search
+    recursively".
+
+pre
+    code(class="xml").
+        <PropertyGroup>
+            <czTemplateFilePattern>**\*.template.config</czTemplateFilePattern>
+        </PropertyGroup>
+
+h2 Hints and Tips
+ul
+    li.
+        If you are replacing a value in your XSLT it is a good idea to
+        null it out in the template by setting the attribute to a blank string,
+        or if your XSLT creates entire nodes or attributes you can delete
+        it altogether.
+    li.
+        Once you have your templates working remember to <a href="git.html">stop storing</a>
+        your config files in your source control system.

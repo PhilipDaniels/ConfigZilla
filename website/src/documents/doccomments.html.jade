@@ -1,0 +1,54 @@
+---
+layout: default
+title: The ConfigZilla Document Comment
+---
+
+h1 #{document.title}
+p.
+    When ConfigZilla generates your .config file it stamps the document with two
+    comments that look like this:
+
+pre
+    code(class="xml").
+        <!-- Built using configuration Release on machine NOFANWINBOX by Phil at 22-Feb-2014 16:23 -->
+        <!-- Last Git commit was e43b124d78c92ea27f971dbb80962efa435b8c46 on branch master -->
+
+p.
+    The Git comment only displays if you have Git, of course.
+    If you don't like these comments you can change their format or even suppress them completely.
+    There is also a third comment reserved for your use.
+
+h2 The czComment properties
+p.
+    There are 3 MSBuild properties called czComment1, czComment2 and czComment3.
+    To set them, create a file called "ConfigZilla.user" in the root of the ConfigZilla
+    project. This is an MSBuild file. Set Build Action to None and Copy to Never. Add
+    your own definitions for the 3 properties:
+
+pre
+    code(class="xml").
+        <PropertyGroup>
+            <czComment1>I wish I had found...</<czComment1>
+            <czComment2>ConfigZilla sooner!</<czComment2>
+        </PropertyGroup>
+
+p.
+    You can use any MSBuild properties you would like. For example, the default
+    comment is formed from this expression:
+
+pre
+    code(class="xml").
+        <czComment1 Condition="'$(czComment1)'==''"> Built using configuration $(Configuration) on machine $(ComputerName) by $(UserName) at $([System.DateTime]::Now.ToString("dd-MMM-yyyy HH:mm")) </czComment1>
+
+p.
+    To completely suppress czComment1 or czComment2 set its value to "none". czComment3
+    is blank by default and won't appear unless you set it to something.
+
+pre
+    code(class="xml").
+        <PropertyGroup>
+            <czComment1>none</<czComment1>
+            <czComment2>none</<czComment2>
+        </PropertyGroup>
+
+p

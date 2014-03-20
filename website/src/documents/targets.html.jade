@@ -1,0 +1,111 @@
+---
+layout: default
+title: Creating the .targets file
+---
+
+h1 #{document.title}
+
+p.
+    The .targets file is where you specify what values you want your properties
+    to have. In the vast majority of cases this will be determined by the value
+    of the <strong>$(Configuration)</strong> built-in variable - this is what
+    you have selected in the little combo-box at the top of Visual Studio:
+
+img(src="images/trg_configs.png")
+
+p.
+    This example .targets file contains virtually
+    everything you need to know about how MSBuild processes these files:
+
+pre
+    code(class="xml").
+        <PropertyGroup>
+            <!-- No condition and processed first means this Property Group specifies the defaults -->
+            <csConnStr1>Data Source=localhost;Initial Catalog=Db1;Integrated Security=True;</csConnStr1>
+            <csConnStr2>Data Source=localhost;Initial Catalog=Db2;Integrated Security=True;</csConnStr2>
+        </PropertyGroup>
+  
+        <PropertyGroup Condition="'$(Configuration)'=='Release'">
+            <csConnStr1>Data Source=PRDSQL;Initial Catalog=Db1;Integrated Security=True;</csConnStr1>
+            <csConnStr2>Data Source=PRDSQL;Initial Catalog=Db2;Integrated Security=True;</csConnStr2>
+        </PropertyGroup>
+
+        <!-- This is a call to String.Contains. You can use this technique to create "hierarchies" of build configurations.
+             See http://msdn.microsoft.com/en-us/library/dd633440.aspx -->
+        <PropertyGroup>
+            <IsEurope>$(Configuration.Contains("Europe"))</IsEurope>
+        </PropertyGroup>
+
+        <PropertyGroup Condition="'$(IsEurope)'=='true'">
+            <csConnStr1>Data Source=DEVSQL_EUROPE;Initial Catalog=Db1;Integrated Security=True;</csConnStr1>
+            <csConnStr2>Data Source=DEVSQL_EUROPE;Initial Catalog=Db2;Integrated Security=True;</csConnStr2>
+        </PropertyGroup>
+
+        <PropertyGroup>
+            <prop1>Hello</prop1>
+            <prop2>$(prop1) World!</prop2>
+        </PropertyGroup>
+
+        <!-- This example is how ConfigZilla sets the default document comment -->
+        <PropertyGroup>
+            <czComment1 Condition="'$(czComment1)'==''"> Built using configuration $(Configuration) on machine $(ComputerName) by $(UserName) at $([System.DateTime]::Now.ToString("dd-MMM-yyyy HH:mm")) </czComment1>
+        </PropertyGroup>
+
+
+        <!-- You can import other MSBuild files. Normally this would be at the
+             top (recall that files are processed top-to-bottom). -->
+        <Import Project="$(MSBuildProjectDirectory)\CommonSettings.targets" />
+
+ul
+    li Properties can have any name you want (it's a good idea to use a prefix to avoid name clashes)
+    li They need to be nested inside &lt;PropertyGroup&gt; elements
+    li They are simple text strings
+    li The file is processed from top to bottom and later definitions override earlier ones
+    li A "Condition" can be attached to a PropertyGroup or an individual property. If it's false then the line is ignored.
+    li Properties and conditions can refer to other properties using the $(name) syntax.
+    li You can call .Net string instance and static methods on properties because they are just strings
+    li You can test (czComment1) a property to see if it is already set by comparing it to a blank string
+    li MSBuild files can import other MSBuild files using the <a href="http://msdn.microsoft.com/en-us/library/92x05xfs.aspx">Import</a> element. This is an advanced technique.
+    li All existing MSBuild properties are available, including the important $(Configuration) property and most environment variables
+    li <a href="http://msdn.microsoft.com/en-us/library/ms171458.aspx">More on MSBuild properties in general.</a>
+    li <a href="http://msdn.microsoft.com/en-us/library/ms164309.aspx">MSBuild Reserved and Well-Known Properties</a>
+    li <a href="http://msdn.microsoft.com/en-us/library/bb629394.aspx">Common MSBuild Project Properties</a>
+    li <a href="http://msdn.microsoft.com/en-us/library/c02as0cs.aspx">Macros for Build Commands and Properties</a> 
+
+h2 Hints and tips
+ul
+    li.
+        It's a good idea to start your file with a PropertyGroup that has no conditions
+        as this will establish defaults for all properties. I use this for the
+        "Debug" configuration (in other words, my .target files do not contain explicit
+        overrides for the Debug configuration).
+    li.
+        You can override individual properties or entire groups with an appropriate condition.
+    li.
+        It's a good idea to have the .target file be the only place that mentions the values - edit
+        your .template.config file to have blank settings. That way you won't get confused
+        about where something is being set.
+    li.
+        By using properties in properties you can create a very DRYish .target file,
+        for example instead of writing "localhost" in every connection string you
+        could write $(DbServer).
+    li.
+        If you have many configurations you can arrange them into "hierarchies"
+        if you name them appropriately. For example there might be Debug.Europe.London,
+        Debug.Europe.Madrid, Debug.Europe.Berlin. If they can all be treated the same
+        way for some purposes use "Contains" or some other string method to determine
+        if you are dealing with a European configuration and then act appropriately. Note
+        that in the example above "Contains" returns a Boolean, which MSBuild
+        then calls ToString() on, which is why the =='true' syntax works.
+    li.
+        You can use conditions <a href="http://msdn.microsoft.com/en-us/library/7szfhaft.aspx">other than "=="</a>
+        but for real power you will need to use the one-level-of-indirection
+        technique shown above with &lt;IsEurope&gt;. This gives you access to the
+        System.String methods and even regexes.
+    li.
+        When ConfigZilla imports all the .targets files it first sorts them, so
+        that they are imported in directory/file order. Therefore, if you want
+        to define properties that are useful across more than one file (such as
+        &lt;IsEurope&gt; above, then do it in the first file - that is, the
+        first .targets file you come across when you expand the Transforms folder.
+

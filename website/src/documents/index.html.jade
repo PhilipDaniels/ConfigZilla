@@ -1,0 +1,40 @@
+---
+layout: default
+title: ConfigZilla Manual Page
+---
+
+h1 ConfigZilla
+
+div
+    img(src="images/configzilla128x128.png" class="imgleft")
+    p.
+        ConfigZilla is a tool for streamlining the management of those pesky .config
+        files in .Net projects. The key to the ConfigZilla approach is that it
+        creates a project called "ConfigZilla" in your solution, and this project then
+        becomes the central location in which you specify the values for your config
+        settings and create classes to access those settings.
+
+    p.
+        ConfigZilla's key strength is its brevity: by making clever use of MSBuild
+        properties and XSL transforms you can achieve a very DRYish result. You have
+        one project in which to configure your settings rather than having to hunt
+        through your projects for web.Debug.config files.
+        ConfigZilla is useful in small .Net projects and has been designed to scale
+        to large solutions with dozens of projects, configurations and settings.
+        If you'd like a quick tour try the <a href="introduction.html">introduction</a>,
+        and clone the repository at <a href="https://github.com/PhilipDaniels/ConfigZilla">Github</a>
+        and browse the samples.
+
+h3: a(href="introduction.html") Introduction & motivation
+h3: a(href="gettingstarted.html") Getting started
+h3: a(href="templates.html") Creating the .template.config files
+h3: a(href="targets.html") .target files: specifying the values for settings
+h3: a(href="transforms.html") .xslt files: how to change *.template.config into *.config
+h3: a(href="doccomments.html") The config file "Document Comment"
+h3: a(href="log4net.html") Using Log4Net
+h3: a(href="encryption.html") Encrypting your .config files
+h3: a(href="git.html") Setting up your .gitignore correctly
+
+p.
+    <strong>Contact Details:</strong> Philip dot Daniels 1971 at gmail dot com
+

@@ -1,0 +1,245 @@
+---
+layout: default
+title: XSL Transforms
+---
+
+h1 Writing the .xslt file
+
+h2 XSL Transformations
+p.
+    ConfigZilla uses a technology called <a href="http://en.wikipedia.org/wiki/XSLT">XSL Transformations</a> to
+    create the config files. For each part of the template that you want to
+    transform you write a small file that inserts, deletes or changes nodes
+    and attributes. ConfigZilla will merge all the .xslt files you write into
+    one large file called ConfigZilla.xslt (which can be found in your output
+    folder) and then apply it. This merging allows you to keep each individual
+    .xslt file small and manageable.
+
+p.
+    The Transforms folder is recursively scanned for files matching the pattern
+    *.czDefault.xslt. These files are always included in the merged ConfigZilla.xslt.
+    Additionally, any files that match your current configuration, such as
+    Foo.Debug.xslt (if you are in Debug mdoe) will also be included. This allows
+    you to take special actions for particular configurations. However, the
+    power of the ConfigZilla variable subsitution feature means that you will
+    rarely need to do this.
+
+h2 Learning by example
+p.
+    XSLT is a complicated and powerful technology which can perform any transformation
+    you want. Luckily the set of transformations we typically need for config
+    files is quite small and simple to understand. So let's take a look at a
+    typical XSLT file. This is from the ConfigZilla samples and is used for
+    setting the &lt;appSettings&gt; block.
+
+pre
+    code(class="xml").
+        <?xml version="1.0" encoding="utf-8"?>
+        <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:msxsl="urn:schemas-microsoft-com:xslt" exclude-result-prefixes="msxsl">
+
+          <xsl:template match="/configuration/appSettings/add[@key='Setting1']|/appSettings/add[@key='Setting1']">
+            <add key="Setting1" value="$(appSetting1)" />
+          </xsl:template>
+
+          <xsl:template match="/configuration/appSettings/add[@key='Setting2']|/appSettings/add[@key='Setting2']">
+            <add key="Setting2" value="$(appSetting2)" />
+          </xsl:template>
+
+          <!-- Replace <AppSettingsBlock /> with the whole set -->
+          <xsl:template match="AppSettingsBlock" xml:space="preserve">
+            <appSettings>
+              <add key="Setting1" value="$(appSetting1)" />
+              <add key="Setting2" value="$(appSetting2)" />
+            </appSettings>
+          </xsl:template>
+
+        </xsl:stylesheet>
+
+p.
+    The first two lines (down to and including the &lt;stylesheet&gt; tag) are
+    just XML boilerplate and are in fact stripped by ConfigZilla when it merges
+    the files. I tend to include them however, because otherwise the Visual
+    Studio XML editor will complain about the syntax. The body of the file then
+    consists of a series of
+    <a href="http://msdn.microsoft.com/en-us/library/ms256110%28v=vs.110%29.aspx">&lt;xsl:template&gt;</a>
+    declarations. Each template
+    consists of 2 parts. The first part, the match="..." statement, is written
+    in <a href="http://en.wikipedia.org/wiki/XPath">XPath</a> syntax, and specifies
+    which elements in the source *.template.config document to apply
+    your template to. The second part is the body of the template, this says what
+    to do when the template matches. These examples are very simple, the template
+    bodies just consist of XML to be output. The "$(appSetting1)" variable
+    will be replaced with the appropriate value as determined by
+    your <a href="targets.html">.targets</a> file.
+
+p.
+    Let's deconstruct the XPath in the first template. Firstly, note that there
+    is a '|' in the middle. This is an "or" and separates two separates XPath
+    expressions, meaning that the template will match either of them. So the
+    two XPaths are
+
+pre
+    code(class="xml").
+        /configuration/appSettings/add[@key='Setting1']
+
+        or
+
+        /appSettings/add[@key='Setting1']
+
+p.
+    "/" means "root of the document, so "/configuration" means look for
+    a node called "configuration" directly under the root. Then we ask
+    for an "appSettings" node under that, and then an "add" node under
+    that. Not surprisingly, this matches the structure of the typical
+    app.config file:
+
+pre
+    code(class="cs").
+        <?xml version="1.0" encoding="utf-8" ?>
+        <configuration>
+          <configSections>
+            <section name="reportingSettings" type="CZ.ReportingSettings, ConfigZilla" requirePermission="false" />
+            <section name="PaymentSettings" type="CZ.PaymentSettings, ConfigZilla"/>
+          </configSections>
+
+          <appSettings>
+            <add key="Setting1" value="" />
+            <add key="Setting2" value="" />
+          </appSettings>
+
+        ...
+
+p.
+    The <strong>[@key='Setting'1]</strong> syntax is a further filter: it means
+    "only match elements with an attribute called 'key' which has the value
+    of 'Setting1'". In other words, this matches a <em>particular</em> appSetting/add
+    element rather than them all.
+
+p.
+    The second XPath expression after the '|' matches exactly the same thing <em>but
+    without the leading "configuration" node</em>. It becomes effective if
+    you split your template files into <a href="templates.html">separate files</a>,
+    because the sub-files don't have the &lt;configuration&gt; node, they just look like this:
+
+pre
+    code(class="xml").
+        <appSettings>
+          <add key="Setting1" value=""/>
+          <add key="Setting2" value=""/>
+        </appSettings>
+                
+p.
+    You don't have to use the '|', but it's handy to have in case you decide
+    to split or not-split at a later date. It would also be possible to use
+    the XPath expression "//appSettings" which will find the appSettings
+    node wherever it is in the document structure. You would only need one
+    XPath expression if you used this, but I tend to avoid it because of the
+    (rare) chance that I might add some XML in the future which matches the
+    expression when I didn't want it to. It's also slow.
+
+p.
+    Both of the templates we have discussed so far are "node rewriting templates".
+    They completely replace the XML they match with new XML. An alternative would
+    be to just set the "value" attribute, but in fact this is a bit more verbose and
+    the node-rewriting technique is often easier to grok.
+
+p.
+    The final template in the example takes this node-rewriting technique a 
+    step further. It replaces the tag &lt;AppSettingsBlock /&gt; with an entire
+    &lt;appSettings&gt;...&lt;/appSettings&gt; section containing all settings.
+    This is a great way of cutting your template files down to size. Plus,
+    if you use this technique and want to add a new connection string to all
+    your projects you only need to do it in the .xslt file.
+
+h2 Setting attributes
+p.
+    The ReportingSettings in the samples uses this XML syntax in the config file:
+
+pre
+    code(class="xml").
+        <reportingSettings PageSize="" Server="" RecipientEmail="" />
+
+p.
+    and this is the XSLT used to set the attribute values:
+
+pre
+    code(class="xml").
+      <xsl:template match="/configuration/reportingSettings/@PageSize|/reportingSettings/@PageSize">
+        <xsl:attribute name="PageSize">
+          <xsl:value-of select="'$(rsPageSize)'"/>
+        </xsl:attribute>
+      </xsl:template>
+
+      <xsl:template match="/configuration/reportingSettings/@Server|/reportingSettings/@Server">
+        <xsl:attribute name="Server">
+          <xsl:value-of select="'$(rsServer)'"/>
+        </xsl:attribute>
+      </xsl:template>
+
+      <xsl:template match="/configuration/reportingSettings/@RecipientEmail|/reportingSettings/@RecipientEmail">
+        <xsl:attribute name="RecipientEmail">
+          <xsl:value-of select="'$(rsRecipientEmail)'"/>
+        </xsl:attribute>
+      </xsl:template>
+
+p.
+    "@PageSize" means match an attribute called PageSize. Then the body of the
+    template is applied. This replaces the matched element of 'PageSize=""'
+    with a new attribute called PageSize and the appropriate value.
+
+p.
+    Attribute-setting templates like this are most useful when you must
+    change a specific attribute and leave the rest unchanged. Setting the
+    "Debug" flag on the compilation node in a web app is a good example. We
+    definitely don't want to change any other attributes that may be set:
+
+pre
+    code(class="xml").
+        <xsl:template match="/configuration/system.web/compilation/@debug|/system.web/compilation/@debug">
+            <xsl:attribute name="debug">
+                <xsl:value-of select="'$(wsDebugFlag)'"/>
+            </xsl:attribute>
+        </xsl:template>
+
+h2 Setting text values (inside nodes)
+p.
+    The PaymentSettings uses this style of XML:
+
+pre
+    code(class="xml").
+        <PaymentSettings>
+            <PaymentSystem>Tom</PaymentSystem>
+            <URL>Dick</URL>
+            <Timeout>Harry</Timeout>
+        </PaymentSettings>
+
+p.
+    To replace Tom, Dick and Harry with the correct values you need to use
+    the text() selector:
+
+pre
+    code(class="xml").
+        <xsl:template match="/configuration/PaymentSettings/PaymentSystem/text()|/PaymentSettings/PaymentSystem/text()">
+            <xsl:text>$(payPaymentSystem)</xsl:text>
+        </xsl:template>
+        etc.
+
+p.
+    This will match "Tom" and replace it with whatever the value of $(payPaymentSystem) is.
+
+
+h2 Further reading
+ul
+    li.
+        The XsltSnippets.txt file provided in the ConfigZilla project contains more
+        template examples.
+    li.
+        Evan Lenz's article <a href="http://lenzconsulting.com/how-xslt-works/">How XSLT Works</a>
+        goes into much more detail than I have here and is highly recommended.
+    li.
+        The <a href="http://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx">Microsoft
+        documentation on XPath</a> contains lots of example expressions.
+    li.
+        If you want to test your XSLT online, <a href="http://xslt.online-toolz.com/tools/xslt-transformation.php">OnlineToolz</a> is pretty good.
+    
+
