@@ -56,7 +56,7 @@ pre
 
 p.
     If you are having trouble getting log4net to work, add the following app setting to
-    your config file. This turns on log4net's internal debugging. 
+    your config file. This turns on log4net's internal debugging.
 
 pre
     code(class="xml").
@@ -66,11 +66,80 @@ pre
 
 p.
 
-h2 TODO
+h2 Associating "Context Data" with log messages using ThreadContext
 p.
-    Add a note here to remind myself how to turn logging on and off/filter the logging
-    down to individual loggers.
+    A powerful feature of log4net is <a href="http://logging.apache.org/log4net/release/manual/contexts.html">ThreadContext</a>
+    which allows you to associate arbitrary data with the logging system and then log it
+    automatically when you log a message. For example, if you are dealing with a particular
+    User Id you could associate that User Id with the context, and every message you log
+    will come out with the User Id attached. The question arises as to how to cancel
+    the association: logging the associated data in the wrong context will be confusing.
+    The IDisposable interface provides one way of doing this automatically. The ConsoleSingleConfig
+    sample contains an example of setting up an "associated int" and an "associated string"
+    with the log using two classes, AssocInt and AssocString. These are then dumped
+    out in the SQL log (but not the file logs) via these parameters:
 
+pre
+    code(class="xml").
+        <parameter>
+            <parameterName value="@assoc_int" />
+            <dbType value="Int64" />
+            <layout type="log4net.Layout.RawPropertyLayout">
+                <key value="AssocInt" />
+            </layout>
+        </parameter>
+        <parameter>
+            <parameterName value="@assoc_string" />
+            <dbType value="String" />
+            <size value="255" />
+            <layout type="log4net.Layout.PatternLayout" value="%property{AssocString}" />
+        </parameter>
+
+p.
+    You can setup as many different types of associated data as you want, it depends
+    on the needs of your app.
+
+h2 Filtering logging
+h3 By level
+p.
+    You can set the <strong>level</strong> filter on a logger, including the root logger.
+    Only messages with at least that level will be logged.
+
+pre
+    code(class="xml").
+        <logger name="My.Name.Space.Class">
+            <level value="ERROR" />
+            ...
+        </logger>
+
+h3 Routing classes (loggers) to different destinations
+p.
+    <a href="http://www.beefycode.com/post/Log4Net-Tutorial-pt-5-Using-Logger-Objects.aspx">Add another logger</a>
+    with the <strong>name</strong> property set to the name of the class or namespace
+    that you want to isolate. Add an appender to the logger (it's best to make an
+    appender just for this logger).
+
+pre
+    code(class="xml").
+        <logger name="My.Name.Space">
+            <level value="ALL" />
+            <appender-ref ref="MyFileAppender />
+        </logger>
+
+
+h3 Filtering
+p.
+    Filtering is <a href="http://www.beefycode.com/post/Log4Net-Tutorial-pt-7-Filters.aspx">applied at the appender level.</a>
+    You can apply various filters to the log messages that are coming through. For example,
+    to block all messages from a namespace you can do this:
+
+pre
+    code(class="xml").
+        <appender ....>
+            <filter type="log4net.Filter.LoggerMatchFilter">
+                <loggerToMatch value="My.Name.Space" />
+                <acceptOnMatch value="false" />
+            </filter>
 
 h2 Further reading
 ul
