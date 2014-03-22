@@ -28,15 +28,18 @@ ul
 h2 Setup
 p.
     It's a good idea to keep the log4net config in a separate file because it tends
-    to be rather long. Remember to add the [assembly] attribute
+    to be rather long. Remember to add the [assembly] attribute as follows (another benefit
+    of doing it this way is that you don't need the "configSource" setting in your
+    app.config file).
 
 pre
     code(class="cs").
         [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4Net.config", Watch = true)]
 
 p.
-    In web apps it seems to be necessary to also add this into your Application_Start()
-    event:
+    In web apps, set the build type of the log4net file to "Content", this will leave it in the
+    root of your website rather than copying it into the bin folder. It seems to be necessary to
+    add this into your Application_Start() event: 
 
 pre
     code(class="cs").
@@ -52,7 +55,91 @@ pre
         static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 p.
+    If you are having trouble getting log4net to work, add the following app setting to
+    your config file. This turns on log4net's internal debugging.
 
+pre
+    code(class="xml").
+        <appSettings>
+            <add key="log4net.Internal.Debug" value="true"/>
+        </appSettings>
+
+p.
+
+h2 Associating "Context Data" with log messages using ThreadContext
+p.
+    A powerful feature of log4net is <a href="http://logging.apache.org/log4net/release/manual/contexts.html">ThreadContext</a>
+    which allows you to associate arbitrary data with the logging system and then log it
+    automatically when you log a message. For example, if you are dealing with a particular
+    User Id you could associate that User Id with the context, and every message you log
+    will come out with the User Id attached. The question arises as to how to cancel
+    the association: logging the associated data in the wrong context will be confusing.
+    The IDisposable interface provides one way of doing this automatically. The ConsoleSingleConfig
+    sample contains an example of setting up an "associated int" and an "associated string"
+    with the log using two classes, AssocInt and AssocString. These are then dumped
+    out in the SQL log (but not the file logs) via these parameters:
+
+pre
+    code(class="xml").
+        <parameter>
+            <parameterName value="@assoc_int" />
+            <dbType value="Int64" />
+            <layout type="log4net.Layout.RawPropertyLayout">
+                <key value="AssocInt" />
+            </layout>
+        </parameter>
+        <parameter>
+            <parameterName value="@assoc_string" />
+            <dbType value="String" />
+            <size value="255" />
+            <layout type="log4net.Layout.PatternLayout" value="%property{AssocString}" />
+        </parameter>
+
+p.
+    You can setup as many different types of associated data as you want, it depends
+    on the needs of your app.
+
+h2 Filtering logging
+h3 By level
+p.
+    You can set the <strong>level</strong> filter on a logger, including the root logger.
+    Only messages with at least that level will be logged.
+
+pre
+    code(class="xml").
+        <logger name="My.Name.Space.Class">
+            <level value="ERROR" />
+            ...
+        </logger>
+
+h3 Routing classes (loggers) to different destinations
+p.
+    <a href="http://www.beefycode.com/post/Log4Net-Tutorial-pt-5-Using-Logger-Objects.aspx">Add another logger</a>
+    with the <strong>name</strong> property set to the name of the class or namespace
+    that you want to isolate. Add an appender to the logger (it's best to make an
+    appender just for this logger).
+
+pre
+    code(class="xml").
+        <logger name="My.Name.Space">
+            <level value="ALL" />
+            <appender-ref ref="MyFileAppender />
+        </logger>
+
+
+h3 Filtering
+p.
+    Filtering is <a href="http://www.beefycode.com/post/Log4Net-Tutorial-pt-7-Filters.aspx">applied at the appender level.</a>
+    You can apply various filters to the log messages that are coming through. For example,
+    to block all messages from a namespace you can do this:
+
+pre
+    code(class="xml").
+        <appender ....>
+            <filter type="log4net.Filter.LoggerMatchFilter">
+                <loggerToMatch value="My.Name.Space" />
+                <acceptOnMatch value="false" />
+            </filter>
 
 h2 Further reading
 ul
