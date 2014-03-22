@@ -43,7 +43,7 @@ and Microsoft .Net 4.0. Apart from that it is completely self-contained.
 
 # Getting Started
 Clone this repo and check out the Samples. The project has a website at
-http://www.philipdaniels.com/configzilla which contains discussions and
+http://philipdaniels.com/configzilla which contains discussions and
 walkthroughs of the examples and some advanced techniques.
 
 Install ConfigZilla into your solution using NuGet. A project called ConfigZilla

@@ -25,4 +25,6 @@ nuget pack ./nuget/ConfigZilla.nuspec
 # Push the package to my local feed for testing.
 LAST=`ls -t *.nupkg | head -n1`
 # echo "LAST is $LAST"
-nuget push $LAST -Source LocalNuGetFeed
+#nuget push $LAST -Source LocalNuGetFeed
+nuget push $LAST
+
