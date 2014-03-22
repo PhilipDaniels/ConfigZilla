@@ -15,9 +15,3 @@ line mode, is from this Stack Overflow question:
 The MSBuild Community Tasks project at https://github.com/loresoft/msbuildtasks
 and the MSBuild Extension pack at http://msbuildextensionpack.codeplex.com/
 provided some inspiration, especially for PowerShell and NuGet.
-
-
-
-
-
-

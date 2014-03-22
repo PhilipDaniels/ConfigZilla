@@ -262,9 +262,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ConnectionStrings.template.config" />
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="log4net.config" />
     <None Include="log4net.template.config" />
     <None Include="Web.template.config" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />

@@ -20,6 +20,22 @@ namespace ConsoleSeparateConfig
             log.Info(name);
             log.Info(underline);
 
+            using (new AssocInt(42))
+            using (new AssocString("Zaphod"))
+            {
+                log.Info("The int 42 will come out in the SQL log in the 'AssocInt' column and 'Zaphod' in the 'AssocString' column.");
+            }
+            log.Info("...and by this message they will be gone again.");
+
+            try
+            {
+                throw new NotImplementedException("Just for demonstration purposes.");
+            }
+            catch (Exception ex)
+            {
+                log.Error("Got an exception.", ex);
+            }
+
             Console.WriteLine("Setting1 = " + CZ.AppSettings.Setting1);
             Console.WriteLine("Setting2 = " + CZ.AppSettings.Setting2);
             Console.WriteLine();
