@@ -127,7 +127,7 @@ pre
           <add key="Setting1" value=""/>
           <add key="Setting2" value=""/>
         </appSettings>
-                
+
 p.
     You don't have to use the '|', but it's handy to have in case you decide
     to split or not-split at a later date. It would also be possible to use
@@ -144,7 +144,7 @@ p.
     the node-rewriting technique is often easier to grok.
 
 p.
-    The final template in the example takes this node-rewriting technique a 
+    The final template in the example takes this node-rewriting technique a
     step further. It replaces the tag &lt;AppSettingsBlock /&gt; with an entire
     &lt;appSettings&gt;...&lt;/appSettings&gt; section containing all settings.
     This is a great way of cutting your template files down to size. Plus,
@@ -227,6 +227,114 @@ pre
 p.
     This will match "Tom" and replace it with whatever the value of $(payPaymentSystem) is.
 
+h2 Dealing with special characters (quoting)
+p.
+    In any type of text-replacement work you will eventually come across the need to escape, or quote,
+    your strings. ConfigZilla is no different, but there is a gotcha - there are <em>two</em>
+    technologies in use, MSBuild and Xslt, and they use different quoting techniques. To quote in
+    MSBuild you need to use hexadecimal ASCII character codes, while to quote in Xslt the easiest way is to
+    use CDATA blocks. Here is an example using Entity Framework. Let's say your .xslt
+    file has an EF connection string with the form:
+
+pre
+    code(class="xml").
+        <add name="BlogContext"
+            connectionString="metadata=res://*/BloggingModel.csdl|
+                             res://*/BloggingModel.ssdl|
+                             res://*/BloggingModel.msl;
+                             provider=System.Data.SqlClient
+                             provider connection string=
+                             &&zwnj;quot;data source=(localdb)\v11.0;
+                             initial catalog=Blogging;
+                             integrated security=True;
+                             multipleactiveresultsets=True;&&zwnj;quot;"
+             providerName="System.Data.EntityClient" />
+
+p.
+    Note the two embedded <em>&#38;quot;</em>s. They will get translated into the " character by
+    MSBuild, breaking your template. The solution is to replace the 6 characters
+    in <em>&#38;quot;</em> with their <a href="http://ascii.cl/">ASCII codes</a>, which are
+    "%26%71%75%6F%74%3B", hence this will work:
+
+pre
+    code(class="xml").
+        <add name="BlogContext"
+            connectionString="metadata=res://*/BloggingModel.csdl|
+                             res://*/BloggingModel.ssdl|
+                             res://*/BloggingModel.msl;
+                             provider=System.Data.SqlClient
+                             provider connection string=
+                             %26%71%75%6F%74%3B;data source=(localdb)\v11.0;
+                             initial catalog=Blogging;
+                             integrated security=True;
+                             multipleactiveresultsets=True;%26%71%75%6F%74%3B"
+             providerName="System.Data.EntityClient" />
+
+p.
+    In this particular case, you may also be able to use a single quote rather
+    than a double quote.
+
+p.
+    Here is an example of quoting on the Xsl-side. If you try and include the
+    following log4net Xml in a template:
+
+pre
+    code(class="xml").
+        <layout type="log4net.Layout.PatternLayout" value="%date{yyyy'-'MM'-'dd HH':'mm':'ss'.'fff}" />
+
+p.
+    you will get error messages around the <em>yyyy</em> part, because Xsl uses "{" as a delimiter
+    for <a href="http://www.w3.org/TR/xslt#attribute-value-templates">attribute value templates</a>.
+    You can prevent this error by simply doubling up the braces
+
+pre
+    code(class="xml").
+        <layout type="log4net.Layout.PatternLayout" value="%date{{yyyy'-'MM'-'dd HH':'mm':'ss'.'fff}}" />
+
+p.
+    An alternative and more powerful technique is to use CDATA blocks which can escape anything:
+
+pre
+    code(class="xml").
+        <xsl:template match="...">
+            <![CDATA[
+            <layout type="log4net.Layout.PatternLayout" value="%date{yyyy'-'MM'-'dd HH':'mm':'ss'.'fff}" />
+            ]]>
+        </xsl:template>
+
+h2 Varying template output for each project in a solution
+p.
+    ConfigZilla writes one Xslt file, ConfigZilla.xslt, when the ConfigZilla project is compiled.
+    It then applies this to each project in your solution. This works well for the vast majority
+    of cases but has one drawback: it is not easy to produce <i>per-project</i> template output.
+    For example, if you have 5 exes in your solution and you want each one of them to produce
+    a separate log file it is not obvious how to do it. You can't use MSBuild properties like
+    $(MSBuildProjectName) because that will always be "ConfigZilla". Instead, ConfigZilla uses
+    <a href="http://www.w3.org/TR/xslt#variables">Xsl Parameters</a> to make this possible.
+
+p.
+    When a project is compiled ConfigZilla automatically gathers the MSBuild properties
+    <i>from that project</i>, prefixes them with "czp" and passes them into the Xsl template.
+    So for example when compiling project "Foo", the variable $(MSBuildProjectName) will
+    be "Foo" and will be available in the Xslt as the Xsl parameter "czpMSBuildProjectName".
+    To use it in your template you need to declare the parameter and then use value-of:
+
+pre
+    code(class="xml").
+        // outside a template:
+        <xsl:param name="czpMSBuildProjectName" />
+
+        // then:
+        <xsl:template>
+            ...
+            <xsl:value-of select="$czpMSBuildProjectName" />
+            ...
+        </xsl:template>
+
+p.
+    You can disable this automatic parameter gathering by setting the MSBuild property
+    "AutoIncludeXslParameters" to false in your ConfigZilla.user file.
+
 
 h2 Further reading
 ul
@@ -241,5 +349,5 @@ ul
         documentation on XPath</a> contains lots of example expressions.
     li.
         If you want to test your XSLT online, <a href="http://xslt.online-toolz.com/tools/xslt-transformation.php">OnlineToolz</a> is pretty good.
-    
+
 
