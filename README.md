@@ -80,3 +80,8 @@ mode which allows such tasks to be easily scripted.
 # TODO
 - [ ] In the Encrypter, remember the last 10 files/sections.
 - [ ] In the Encrypter, support DPAPI.
+
+
+# Release History
+* 1.1.0. Make per-project MSBuild properties available as XSL parameters
+  with a "czp" prefix, e.g. "czpMSBuildProjectName". See website for usage.

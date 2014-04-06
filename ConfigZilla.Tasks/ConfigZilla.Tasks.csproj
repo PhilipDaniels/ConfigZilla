@@ -37,6 +37,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtractPropertiesAsXslParameters.cs" />
     <Compile Include="CreateMergedXslt.cs" />
     <Compile Include="GitInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

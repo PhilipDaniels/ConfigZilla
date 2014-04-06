@@ -128,7 +128,9 @@ namespace ConfigZilla.Tasks
             path = (path ?? "").Trim();
 
             if (path.EndsWith(GitExeName, StringComparison.OrdinalIgnoreCase))
+            {
                 return path;
+            }
             else
             {
                 return Path.Combine(path, GitExeName);

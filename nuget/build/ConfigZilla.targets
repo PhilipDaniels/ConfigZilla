@@ -30,8 +30,8 @@
     <!-- We will rename *.template.config to *.config -->
     <czOutputFilePattern Condition="'$(czOutputFilePattern)'==''">.config</czOutputFilePattern>
   </PropertyGroup>
-  
-  
+
+ 
   <!-- Build an ItemGroup of all the templates we need to process, but only if it has not been
        set by the user yet. -->
   <ItemGroup Condition="'@(czTemplates)'==''">
@@ -46,12 +46,24 @@
     </_czTemplates>
   </ItemGroup>
 
+  <UsingTask AssemblyFile="$(czConfigFolder)\ConfigZilla.Tasks.dll" TaskName="ExtractPropertiesAsXslParameters" />
 
   <Target Name="czProcessTemplates" BeforeTargets="BeforeBuild" Condition="'@(_czTemplates)'!=''">
+    <!-- Gather this project's properties and make them available as Xsl parameters. -->
+    <ExtractPropertiesAsXslParameters Condition="'$(czAutoIncludeXslParameters)'!='false'">
+      <Output PropertyName="czXslParameterString" TaskParameter="XslParameterString" />
+    </ExtractPropertiesAsXslParameters>
+
+    <!-- Add the automatic parameters onto the user's parameters, if any. -->
+    <PropertyGroup>
+      <czXslParameterString>$(czXslParameterString)$(_czXslParameterString)</czXslParameterString>
+    </PropertyGroup>
+    
     <CallTarget Targets="czDump"/>
     <XslTransformation XmlInputPaths="%(_czTemplates.FullPath)" 
                        XslInputPath="$(czTransformFile)"
                        OutputPaths="%(_czTemplates.OutputFile)"
+                       Parameters="$(czXslParameterString)"
                        />
   </Target>
 
