@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>ConfigZilla</id>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <authors>Philip Daniels</authors>
     <owners>Philip Daniels</owners>
     <description>ConfigZilla is a solution for applying transformations to *.config files across an entire solution in a quick and DRY-ish manner. It also provides a GUI for easy encrypting and decrypting of config files.</description>
@@ -10,9 +10,7 @@
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <iconUrl>http://philipdaniels.com/configzilla/images/configzilla128x128.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <releaseNotes>This update uses Xsl Parameters to allow per-project template customisations, for
-    example each project can have its own individual log file by using the "czpMSBuildProjectName"
-    parameter. See website for more details.</releaseNotes>
+    <releaseNotes>This update uses Xsl Parameters to allow per-project template customisations, for example each project can have its own individual log file by using the "czpMSBuildProjectName" parameter. See website for more details.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>MSBuild, web.config, app.config, Xslt</tags>
   </metadata>

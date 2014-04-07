@@ -55,6 +55,25 @@ function CopyConfigZillaFolder
 	copy-item $srcProjectDir -destination $ConfigZillaDestFolder -recurse -container
 }
 
+function CopyConfigZillaVitals
+{
+	# When you upgrade from one version to another, we need
+	# to copy in these two files.
+	$scriptPath = split-path $script:MyInvocation.MyCommand.Path
+	$srcProjectDir = $scriptPath + "\ConfigZilla"
+	$destProjectDir = (ConfigZillaDestFolder)
+
+	$s = $srcProjectDir + "\ConfigZilla.Tasks.dll"
+	$d = $destProjectDir + "\ConfigZilla.Tasks.dll"
+	Write-Host ("Copying {0} to {1}" -f $s, $d)
+	copy-item $s -destination $d
+
+	$s = $srcProjectDir + "\ConfigZillaCreateXslt.targets"
+	$d = $destProjectDir + "\ConfigZillaCreateXslt.targets"
+	Write-Host ("Copying {0} to {1}" -f $s, $d)
+	copy-item $s -destination $d
+}
+
 function AddConfigZillaProjectToSolution
 {
 	$solution = Get-Interface $dte.Solution ([EnvDTE80.Solution2])
@@ -108,5 +127,5 @@ function RemoveConfigZillaProjectReference
 Export-ModuleMember Get-SolutionDir, ConfigZillaDestFolder, ConfigZillaProjectName, ConfigZillaDestFolderExists, `
 	ConfigZillaProjectReference, ConfigZillaProjectExistsInSolution, CopyConfigZillaFolder, `
 	AddConfigZillaProjectToSolution, RemoveConfigZillaProjectFromSolution, UpdateAssemblyReferenceInConfigZillaProject, `
-	AddConfigZillaProjectAsReference, RemoveConfigZillaProjectReference
+	AddConfigZillaProjectAsReference, RemoveConfigZillaProjectReference, CopyConfigZillaVitals
 

@@ -10,6 +10,7 @@ function Main
 	if (ConfigZillaDestFolderExists)
 	{
 		Write-Host ("The ConfigZilla folder already exists at {0}, NOT copying again." -f (ConfigZillaDestFolder))
+		CopyConfigZillaVitals
 	}
 	else
 	{

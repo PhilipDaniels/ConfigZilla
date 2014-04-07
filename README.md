@@ -85,3 +85,7 @@ mode which allows such tasks to be easily scripted.
 # Release History
 * 1.1.0. Make per-project MSBuild properties available as XSL parameters
   with a "czp" prefix, e.g. "czpMSBuildProjectName". See website for usage.
+
+* 1.1.1. When updating an existing installation, while we must not overwrite
+  the ConfigZilla project, we do need to overwrite the ConfigZillaCreateXslt.targets
+  and ConfigZilla.Tasks.dll files.
