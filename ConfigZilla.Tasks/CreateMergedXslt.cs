@@ -1,11 +1,8 @@
-﻿using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+﻿using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -17,8 +14,11 @@ namespace ConfigZilla.Tasks
     /// </summary>
     public class CreateMergedXslt : TaskWithProperties
     {
+        /// <summary>
+        /// The name of the file to create.
+        /// </summary>
         [Required]
-        public string MergedXslt { get; set; }
+        public string MergedXsltFileName { get; set; }
 
         [Required]
         public string LogLevel { get; set; }
@@ -37,14 +37,14 @@ namespace ConfigZilla.Tasks
         public override bool Execute()
         {
             DetermineLoggingLevel();
-            Log.LogMessage(LoggingLevel, "Creating merged Xslt file {0}", MergedXslt);
+            Log.LogMessage(LoggingLevel, "Creating merged Xslt file {0}", MergedXsltFileName);
             DumpProperties(LoggingLevel);
 
             MissedProperties = new List<string>();
 
-            File.Delete(MergedXslt);
+            File.Delete(MergedXsltFileName);
             string contents = GetMergedFile();
-            File.WriteAllText(MergedXslt, contents);
+            WriteNewFile(contents);
 
             Log.LogMessage
                 (
@@ -64,6 +64,17 @@ namespace ConfigZilla.Tasks
             }
 
             return true;
+        }
+
+        void WriteNewFile(string contents)
+        {
+            string dir = Path.GetDirectoryName(MergedXsltFileName);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            File.WriteAllText(MergedXsltFileName, contents);
         }
 
         string GetMergedFile()
@@ -132,8 +143,8 @@ namespace ConfigZilla.Tasks
 
         static Regex TemplateVariableRegex = new Regex
             (
-            @"(?<!\\)" +        // Do not match $(var) when it is actually \$(var)
-            @"\$(.*?)\)",       // match $(var)
+            @"(?<!\$\$)" +      // Do not match $(var) when it is actually $$$(var)
+            @"\$\((.*?)\)",     // match $(var)
             RegexOptions.Multiline | RegexOptions.Compiled
             );
 

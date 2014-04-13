@@ -10,14 +10,10 @@ function Main
 	if (ConfigZillaDestFolderExists)
 	{
 		Write-Host ("The ConfigZilla folder already exists at {0}, NOT copying again." -f (ConfigZillaDestFolder))
-		CopyConfigZillaVitals
 	}
 	else
 	{
 		CopyConfigZillaFolder
-		# This is no longer necessary because the ConfigZilla.Tasks.dll assembly is
-		# copied into the ConfigZilla folder during the NuGet build process.
-		# UpdateAssemblyReferenceInConfigZillaProject($toolsPath)
 	}
 
 	if (ConfigZillaProjectExistsInSolution)
@@ -29,8 +25,8 @@ function Main
 		AddConfigZillaProjectToSolution
 	}
 
-
-	AddConfigZillaProjectAsReference($project)
+	AddConfigZillaProjectAsReference $project
+	RemoveVersion1Artifacts
 }
 
 Main

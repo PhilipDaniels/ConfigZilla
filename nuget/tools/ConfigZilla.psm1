@@ -124,8 +124,39 @@ function RemoveConfigZillaProjectReference
     Write-Host "ConfigZilla reference removed from $($CurrentProject.Name)"
 }
 
+function RemoveVersion1Artifacts
+{
+	# This file now lives permanently in the packages folder.
+	$f = "{0}\ConfigZilla.Tasks.dll" -f (ConfigZillaDestFolder)
+	if (test-path $f)
+	{
+		Write-Host "Removing v1 file $f during upgrade."
+		remove-item $f
+	}
+
+	# This file now lives permanently in the packages folder.
+	$f = "{0}\ConfigZillaCreateXslt.targets" -f (ConfigZillaDestFolder)
+	if (test-path $f)
+	{
+		Write-Host "Removing v1 file $f during upgrade."
+		remove-item $f
+	}
+
+	# Hence this project reference is no longer needed.
+	$f = "{0}\ConfigZilla.csproj" -f (ConfigZillaDestFolder)
+	$filecontents = get-content $f
+
+	$importstmt = '<Import Project="ConfigZillaCreateXslt.targets" />'
+	$containsimportstmt = $filecontents | %{ $_ -match $importstmt }
+
+	if ($containsimportstmt -contains $true)
+	{
+		Write-Host "Removing Import of ConfigZillaCreateXslt from ConfigZilla.csproj during upgrade."
+		(get-content $f) | Where-Object {$_ -notmatch $importstmt } | set-content $f
+	}
+}
+
 Export-ModuleMember Get-SolutionDir, ConfigZillaDestFolder, ConfigZillaProjectName, ConfigZillaDestFolderExists, `
 	ConfigZillaProjectReference, ConfigZillaProjectExistsInSolution, CopyConfigZillaFolder, `
 	AddConfigZillaProjectToSolution, RemoveConfigZillaProjectFromSolution, UpdateAssemblyReferenceInConfigZillaProject, `
-	AddConfigZillaProjectAsReference, RemoveConfigZillaProjectReference, CopyConfigZillaVitals
-
+	AddConfigZillaProjectAsReference, RemoveConfigZillaProjectReference, RemoveVersion1Artifacts 

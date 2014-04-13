@@ -56,11 +56,11 @@ to meet your needs.
   your current build configuration. Files named *.$(Configuration).xslt are only
   included if your build configuration matches.
 
-When you compile the ConfigZilla project it creates a file called ConfigZilla.xslt
-in the output folder. This contains all the *.xslt transformations, merged
-together and with variable substitution performed. Then, when you compile the
-other projects in your solution, this file is used to create *.config from
-*.template.config.
+When you compile a project that ConfigZilla is installed in it creates a file
+named ProjectX.ConfigZilla.xslt in the "obj" output folder. This contains all
+the *.xslt transformations, merged together and with variable substitution
+performed. This is then used during the build step to transform *.template.config
+files into *.config.
 
 Lastly, jig up your source control: if you are generating a config file from a
 template then do not add that config file to source control. Be careful with
@@ -83,9 +83,48 @@ mode which allows such tasks to be easily scripted.
 
 
 # Release History
-* 1.1.0. Make per-project MSBuild properties available as XSL parameters
-  with a "czp" prefix, e.g. "czpMSBuildProjectName". See website for usage.
+* 2.0.0. Change the generation of the merged ConfigZilla.xslt. This is now generated
+  separately for each project that ConfigZilla is installed in. Properties such
+  as $(MSBuildProjectName) can now be used in .targets files and will evaluate to
+  the name of the project instead of "ConfigZilla" as they did previously.
+
+  All the DLLs and .targets files that ConfigZilla uses are now kept solely in
+  the NuGet packages folder rather than being copied into the ConfigZilla project.
+  This improves the uprgade story markedly.
+
+  The ability to pass parameters to the XslTransform task remains, but ConfigZilla
+  no longer automatically gathers project properties into "czp..." parameters.
+  This mechanism is completely obviated by the per-project generation of the Xslt.
+
+  The "Transforms" folder structure that is seen in the default ConfigZilla project
+  can now also be used in individual projects. The Transforms in ConfigZilla
+  are imported (for .targets) or merged (for .xslt) first, and then the Transforms
+  from the project are merged. Therefore, per-project Transforms can be used to
+  override the values set in ConfigZilla. In other words, ConfigZilla\Transforms
+  can be used to set defaults, and ProjectX\Transforms can *optionally* override them.
+
+  The syntax for escaping a variable name in the Xslt file is now $$$(Variable)
+  rather than \$(Variable), because the latter was frequently used in file paths.
+
+  The XmlDeserializeConfigSectionHandler class now supports validation using
+  System.ComponentModel.DataAnnotations attributes. n.b. If upgrading from
+  version 1.*, the copy of XmlDeserializeConfigSectionHandler in your ConfigZilla
+  project will NOT be upgraded. To workaround this, create a ConsoleApp,
+  install ConfigZilla into it, and then just copy-and-paste the class into your
+  existing project.
 
 * 1.1.1. When updating an existing installation, while we must not overwrite
   the ConfigZilla project, we do need to overwrite the ConfigZillaCreateXslt.targets
   and ConfigZilla.Tasks.dll files.
+
+* 1.1.0. Make per-project MSBuild properties available as XSL parameters
+  with a "czp" prefix, e.g. "czpMSBuildProjectName". See website for usage.
+
+
+BUGS
+On upgrade, the old .targets file must be cleaned up from the ConfigZilla project.
+Remove the 2 files, and adjust the .csproj.
+
+After the first upgrade, compile in CalneaV3 fails because...the 
+  ConfigZilla.targets file is trying to import the merged Xslt file before it exists.
+
