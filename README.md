@@ -103,9 +103,6 @@ mode which allows such tasks to be easily scripted.
   override the values set in ConfigZilla. In other words, ConfigZilla\Transforms
   can be used to set defaults, and ProjectX\Transforms can *optionally* override them.
 
-  The syntax for escaping a variable name in the Xslt file is now $$$(Variable)
-  rather than \$(Variable), because the latter was frequently used in file paths.
-
   The XmlDeserializeConfigSectionHandler class now supports validation using
   System.ComponentModel.DataAnnotations attributes. n.b. If upgrading from
   version 1.*, the copy of XmlDeserializeConfigSectionHandler in your ConfigZilla
@@ -119,12 +116,4 @@ mode which allows such tasks to be easily scripted.
 
 * 1.1.0. Make per-project MSBuild properties available as XSL parameters
   with a "czp" prefix, e.g. "czpMSBuildProjectName". See website for usage.
-
-
-BUGS
-On upgrade, the old .targets file must be cleaned up from the ConfigZilla project.
-Remove the 2 files, and adjust the .csproj.
-
-After the first upgrade, compile in CalneaV3 fails because...the 
-  ConfigZilla.targets file is trying to import the merged Xslt file before it exists.
 
