@@ -12,7 +12,9 @@ div
         files in .Net projects. The key to the ConfigZilla approach is that it
         creates a project called "ConfigZilla" in your solution, and this project then
         becomes the central location in which you specify the values for your config
-        settings and create classes to access those settings.
+        settings and create classes to access those settings. ConfigZilla generates
+        App.config files from App.template.configs which you create; this is done on
+        a per-project basis whenever you compile your project.
 
     p.
         ConfigZilla's key strength is its brevity: by making clever use of MSBuild
@@ -24,6 +26,12 @@ div
         If you'd like a quick tour try the <a href="introduction.html">introduction</a>,
         and clone the repository at <a href="https://github.com/PhilipDaniels/ConfigZilla">Github</a>
         and browse the samples.
+
+    p.
+        <strong>Please note:</strong> If you are using ConfigZilla v1 upgrading to
+        v2 is highly recommended because of the increased ease of use with respect
+        to per-project customisations. Please read the <a href="upgradetov2.html">upgrade notes</a>
+        for the (very minor) considerations. 
 
 h3: a(href="introduction.html") Introduction & motivation
 h3: a(href="gettingstarted.html") Getting started
@@ -37,4 +45,6 @@ h3: a(href="git.html") Setting up your .gitignore correctly
 
 p.
     <strong>Contact Details:</strong> Philip dot Daniels 1971 at gmail dot com
+p.
+    or raise an issue on <a href="https://github.com/PhilipDaniels/ConfigZilla">Github</a>.
 

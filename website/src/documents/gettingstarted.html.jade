@@ -22,7 +22,8 @@ img(src="images/gs_packagemanagergui.png" alt="Package Manager GUI")
 p.
   Install ConfigZilla into every project that you want to access your
   configuration settings from. This will do two things. The first and most
-  obvious is that it will create a project called "ConfigZilla" in your solution.
+  obvious is that it will create a project called "ConfigZilla" in your solution
+  and your other projects will be given a reference to ConfigZilla too.
   We'll take a quick tour in a moment. The second, and much less obvious, is
   that it will install an MSBuild ".targets" file into the .csproj of each
   project that you added ConfigZilla to. You can see this by right-clicking
@@ -30,7 +31,7 @@ p.
   the bottom you will find a line like this:
 pre
     code(class="xml").
-        <Import Project="..\packages\ConfigZilla.0.1.0\build\ConfigZilla.targets" />
+        <Import Project="..\packages\ConfigZilla.2.0.0\build\ConfigZilla.targets" />
 
 p.
   That .targets file contains the instructions that will transform your
@@ -68,36 +69,41 @@ p.
   In fact, that is exactly what it is. ConfigZilla works like this:
 ol
   li.
-    The build of the ConfigZilla project begins.
+    The build of the ConfigZilla project begins. This will probably be first
+    because most projects will include ConfigZilla so that they can reference
+    the config settings. <strong>The contents of the Transform folder is ignored
+    at this time.</strong>
   li.
-    ConfigZilla loads all the *.targets files from under the Transforms folder
-    and evaluates them in the current Configuration context. This results in
-    each property being given a value. <a href="targets.html">More on targets.</a>
+    Compilation of projects that ConfigZilla is installed in begins (call it ProjectX).
+    ConfigZilla loads all the *.targets files from under the ConfigZilla\Transforms
+    folder <strong>and then, optionally,</strong> ProjectX\Transforms,
+    and evaluates them in the context of ProjectX and the current build configuration.
+    This results in each property being given a value. <a href="targets.html">More on targets.</a>
   li.
     Next ConfigZilla reads all the applicable .xslt files from under the 
-    Transforms folder and looks for property expressions $(likethis). If it
-    finds one it replaces it with the value of that property. If there is no
+    ConfigZilla\Transforms folder <strong>and then, optionally,</strong> ProjectX\Transforms,
+    and looks for property expressions $(likethis). If it
+    finds one it replaces it with the value of that property as worked out during 
+    the previous phase. If there is no
     matching property then the text is just passed through as-is. ConfigZilla
     will always include a file called *.czDefaults.xslt and it will also
     optionally include another file if its name matches the current solution
-    configuration: Foo.Release.xslt for example. But the expressiveness of
+    configuration: ProjectX.Release.xslt for example. But the expressiveness of
     the *.targets files means you usually only need the czDefaults file.
     <a href="transforms.html">More on transforms.</a>. If you would like to
     see what ConfigZilla is doing try increasing the verbosity of MSBuild
     to "normal".
   li.
     All the *.xslt files are then concatenated together and written out, together
-    with a bit of boilerplate, into a single file called ConfigZilla.xslt, which
-    will be in the output folder of the ConfigZilla project. You can examine
+    with a bit of boilerplate, into a single file called ProjectX.ConfigZilla.xslt, which
+    will be in the "obj" folder of the ConfigZilla project. You can examine
     this file in Visual Studio or a text editor if you want to check it; 
     <a href="exampleconfigzilla.xslt">here is an example.</a>
   li.
-    That's all the hard work done. The ConfigZilla.xslt file contains all the
-    information necessary to transform *.template.config into *.config. When you
-    compile a project that you have installed ConfigZilla into, all that happens
-    is that a special MSBuild target (via the Import statement shown above)
-    scans the project for *.template.config files, applies ConfigZilla.xslt to
-    them using the built-in MSBuild target called
+    That's all the hard work done. The ProjectX.ConfigZilla.xslt file contains all the
+    information necessary to transform *.template.config into *.config. The next
+    step in the build process simply finds all your *.template.config files
+    and applies the Xslt to them using the built-in MSBuild target called
     <a href="http://msdn.microsoft.com/en-us/library/ff598688.aspx">XslTransformation</a>,
     and writes the result to *.config.
 p.
@@ -106,9 +112,9 @@ p.
   simply scans it recursively looking for *.targets and *.xslt files. Secondly,
   the property substitutions that ConfigZilla makes in the *.xslt files are 
   simply MSBuild property values, this means that the full set of standard
-  MSBuild properties such as $(Configuration) and $(MSBuildProjectDirectory)
-  are available to you, though there is rarely a need to use them. A corollary
-  of this, coupled with the fact that ConfigZilla <strong>amalgamates everything
+  MSBuild properties such as $(Configuration) and $(MSBuildProjectName)
+  are available to you <strong>and will be evaluated in the context of the project being compiled</strong>.
+  A corollary of this, coupled with the fact that ConfigZilla <strong>amalgamates everything
   together</strong>, is that it is a a good idea to use a <strong>variable prefix</strong>
   such as "app" for app settings and "cs" for connection strings. This will stop
   any inadvertent clashes.
@@ -177,7 +183,7 @@ h4 3. Write your .targets files to set property values
 p.
     The .targets file is where you create MSBuild properties and give them values.
     ConfigZilla dynamically loads your .targets file and evaluates it in the
-    context of the ConfigZilla project and the current solution configuration
+    context of the project being compiled and the current solution configuration
     such as Debug, Release etc. You don't need to know much about MSBuild to
     <a href="targets.html">write a valid targets file</a>, but the important thing
     to note is that all <a href="http://msdn.microsoft.com/en-us/library/ms171458.aspx">properties are simple strings</a>.
@@ -293,6 +299,13 @@ pre
             <URL>https://worldpay.releasemode.example.com</URL>
             <Timeout>30</Timeout>
         </PaymentSettings>
+
+p.
+    For classes using this style (i.e. deriving from XmlDeserializeConfigSectionHandler) you
+    can use validation attributes from the
+    <a href="http://msdn.microsoft.com/en-us/library/system.componentmodel.dataannotations.aspx">System.ComponentModel.DataAnnotations</a>
+    namespace as well as the <a href="http://msdn.microsoft.com/en-us/library/system.componentmodel.defaultvalueattribute(v=vs.100).aspx">DefaultValue</a>
+    attribute.
 
 p.
     For both of these last two custom sections, you refer to them in your C#

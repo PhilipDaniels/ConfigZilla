@@ -59,18 +59,40 @@ pre
 ul
     li Properties can have any name you want (it's a good idea to use a prefix to avoid name clashes)
     li They need to be nested inside &lt;PropertyGroup&gt; elements
-    li They are simple text strings
+    li They are simple text strings and you can call .Net string methods on them
     li The file is processed from top to bottom and later definitions override earlier ones
     li A "Condition" can be attached to a PropertyGroup or an individual property. If it's false then the line is ignored.
     li Properties and conditions can refer to other properties using the $(name) syntax.
     li You can call .Net string instance and static methods on properties because they are just strings
     li You can test (czComment1) a property to see if it is already set by comparing it to a blank string
     li MSBuild files can import other MSBuild files using the <a href="http://msdn.microsoft.com/en-us/library/92x05xfs.aspx">Import</a> element. This is an advanced technique.
-    li All existing MSBuild properties are available, including the important $(Configuration) property and most environment variables
+    li.
+      All existing MSBuild properties are available, including the important $(Configuration) property and most environment variables.
+      If you increase the logging level of MSBuild to "normal" ConfigZilla will dump out the values of all properties it is considering.
     li <a href="http://msdn.microsoft.com/en-us/library/ms171458.aspx">More on MSBuild properties in general.</a>
     li <a href="http://msdn.microsoft.com/en-us/library/ms164309.aspx">MSBuild Reserved and Well-Known Properties</a>
     li <a href="http://msdn.microsoft.com/en-us/library/bb629394.aspx">Common MSBuild Project Properties</a>
     li <a href="http://msdn.microsoft.com/en-us/library/c02as0cs.aspx">Macros for Build Commands and Properties</a> 
+
+h2 Using per-project targets
+p.
+  Normally you can simply define all your .targets under the Transforms folder in the ConfigZilla
+  project, and because properties such as $(MSBuildProjectName) are evaluated in the context of
+  the including project this is normally enough flexibility to achieve everything you want, for
+  example you can given log files a unique name for each project using a construct such as this:
+
+pre
+  code(class="xml").
+    <filename>C:\temp\$(MSBuildProjectName).log</filename>
+
+p.
+  However, ConfigZilla will also look for a "Transforms" folder under each project
+  that you are compiling, and will include those .targets files <strong>after</strong>
+  the ones from ConfigZilla\Transforms. Should you need it, this gives you even more
+  flexibility to override properties within each project (recall that properties are
+  evaluated from top to bottom so the ones from your project will override the ConfigZilla
+  properties).
+
 
 h2 Hints and tips
 ul
