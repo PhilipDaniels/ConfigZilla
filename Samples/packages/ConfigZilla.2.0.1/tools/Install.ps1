@@ -14,7 +14,6 @@ function Main
 	else
 	{
 		CopyConfigZillaFolder
-		UpdateAssemblyReferenceInConfigZillaProject($toolsPath)
 	}
 
 	if (ConfigZillaProjectExistsInSolution)
@@ -24,8 +23,10 @@ function Main
 	else
 	{
 		AddConfigZillaProjectToSolution
-		AddConfigZillaProjectAsReference($project)
 	}
+
+	AddConfigZillaProjectAsReference $project
+	RemoveVersion1Artifacts
 }
 
 Main

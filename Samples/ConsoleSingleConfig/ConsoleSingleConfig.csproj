@@ -74,12 +74,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConfigZilla\ConfigZilla.csproj">
-      <Project>{93422d3e-17db-4ef8-9027-e1fce2735f00}</Project>
+      <Project>{93422D3E-17DB-4EF8-9027-E1FCE2735F00}</Project>
       <Name>ConfigZilla</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\ConfigZilla.0.1.0\build\ConfigZilla.targets" Condition="Exists('..\packages\ConfigZilla.0.1.0\build\ConfigZilla.targets')" />
+  <Import Project="..\packages\ConfigZilla.2.0.1\build\ConfigZilla.targets" Condition="Exists('..\packages\ConfigZilla.2.0.1\build\ConfigZilla.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
