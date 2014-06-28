@@ -8,11 +8,13 @@ namespace ConfigZilla.Tasks
 {
     public class GitInfo : TaskWithProperties
     {
-        const string GitExeName = "git.exe";
+        string[] GitExeNames = { "git.exe" };
+        string[] GitExeSearchPaths = { @"C:\Program Files (x86)\Git\bin" };
 
         /// <summary>
         /// Location of the GitExe. can be left blank, in which case "the usual suspects"
-        /// will be searched.
+        /// will be searched. If git is not found then the task will still return success
+        /// so as not to abort builds on boxes that don't have git.
         /// </summary>
         public string GitExe { get; set; }
 
@@ -24,52 +26,19 @@ namespace ConfigZilla.Tasks
 
         public override bool Execute()
         {
+            if (GitExe != null)
+                GitExe = GitExe.Trim();
+
             Branch = LastCommitHash = "";
             string pathToGitExe = FindGitExe();
             if (String.IsNullOrEmpty(pathToGitExe))
-                return false;
+                return true;
 
+            Log.LogMessage(MessageImportance.Normal, "Found git at '{0}'.", pathToGitExe);
             Branch = RunGit(pathToGitExe, "symbolic-ref --short head");
             LastCommitHash = RunGit(pathToGitExe, "show -s --pretty=format:%H");
 
             return true;
-        }
-
-        string FindGitExe()
-        {
-            // Try and find the one passed in.
-            if (!String.IsNullOrWhiteSpace(GitExe))
-            {
-                if (GitExistsAtPath(GitExe))
-                {
-                    return MakeFullPath(GitExe);
-                }
-                else
-                {
-                    Log.LogWarning("Cannot find git.exe at your specified path of " + GitExe + ", trying default locations.");
-                }
-            }
-
-            // Try the usual suspects.
-            foreach (string possiblePath in GitExeSearchPaths)
-            {
-                if (GitExistsAtPath(possiblePath))
-                {
-                    return MakeFullPath(possiblePath);
-                }
-            }
-
-            Log.LogWarning("Could not locate git.exe in the usual places. Testing to see if it is on your path.");
-            string version = RunGit(GitExe, "--version", false);
-            if (String.IsNullOrEmpty(version))
-            {
-                Log.LogError("Could not find git.exe on your path.");
-                return "";
-            }
-            else
-            {
-                return GitExe;
-            }
         }
 
         string RunGit(string gitExe, string arguments, bool logErrors = true)
@@ -105,34 +74,95 @@ namespace ConfigZilla.Tasks
             }
         }
 
-        IEnumerable<string> GitExeSearchPaths
+        string FindGitExe()
         {
-            get
+            string result = null;
+
+            // Try and find the one passed in. This must be a file.
+            if (!String.IsNullOrWhiteSpace(GitExe))
             {
-                yield return @"C:\Program Files (x86)\Git\bin";
-                yield return @"C:\PublicHome\OtherApps\PortableGit\bin";
+                result = FindGitExeImpl(GitExe);
+                if (result != null)
+                {
+                    return result;
+                }
+                else
+                {
+                    Log.LogWarning("Cannot find git executable at your specified MSBuild-property-specified path of '" + GitExe + 
+                        "'. (It can be a list of possibilities, separated by semi-colons).");
+                }
             }
+
+            // Is it specified via an environment variable?
+            string ev = Environment.GetEnvironmentVariable("CZ_GIT_EXE");
+            if (!String.IsNullOrEmpty(ev))
+            {
+                result = FindGitExeImpl(ev);
+                if (result != null)
+                {
+                    return result;
+                }
+                else
+                {
+                    Log.LogWarning("Cannot find git executable at '" + ev + 
+                        "' as specified in environment variable CZ_GIT_EXE. (It can be a list of possibilities, separated by semi-colons).");
+                }
+            }
+
+            // Try "the usual suspects".
+            foreach (string possiblePath in GitExeSearchPaths)
+            {
+                foreach (string exeName in GitExeNames)
+                {
+                    string p = Path.Combine(possiblePath, exeName);
+                    if (FindGitExeImpl(p) != null)
+                        return p;
+                }
+            }
+
+            Log.LogWarning("Could not locate git.exe in the usual places. Testing to see if it is on your path.");
+            foreach (string exe in GitExeNames)
+            {
+                string version = RunGit(exe, "--version", false);
+                if (!String.IsNullOrEmpty(version))
+                    return exe;
+            }
+
+
+            Log.LogWarning("Could not find git.exe on your path, ignoring.");
+            return null;
         }
 
-        bool GitExistsAtPath(string path)
+        /// <summary>
+        /// Test to see whether any of the paths in <paramref name="possiblePaths"/> matches
+        /// a file on disk. This method is guaranteed to not blow up. We don't want to
+        /// fail due a build due to crappy environment variable settings, for example.
+        /// </summary>
+        /// <param name="possiblePaths">Semi-colon separated list of possible git exes.</param>
+        /// <returns>First file path that exists, or null if none exist.</returns>
+        string FindGitExeImpl(string possiblePaths)
         {
-            path = MakeFullPath(path);
-            return File.Exists(path);
-        }
-
-        string MakeFullPath(string path)
-        {
-            path = (path ?? "").Trim();
-
-            if (path.EndsWith(GitExeName, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                return path;
+                if (String.IsNullOrEmpty(possiblePaths))
+                    return null;
+
+                string[] paths = possiblePaths.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                if (paths != null && paths.Length > 0)
+                {
+                    foreach (string path in paths)
+                    {
+                        if (File.Exists(path))
+                            return path;
+                    }
+                }
+
+                return null;
             }
-            else
+            catch
             {
-                return Path.Combine(path, GitExeName);
+                return null;
             }
         }
     }
-
 }
