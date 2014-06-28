@@ -83,6 +83,10 @@ mode which allows such tasks to be easily scripted.
 
 
 # Release History
+* 2.0.16. Change the way that ConfigZilla searches for git.exe so that it will
+  find it if it is on your path, and/or use an environment variable CZ_GIT_EXE.
+  Add notes to website explaining the options.
+
 * 2.0.0. Change the generation of the merged ConfigZilla.xslt. This is now generated
   separately for each project that ConfigZilla is installed in. Properties such
   as $(MSBuildProjectName) can now be used in .targets files and will evaluate to
