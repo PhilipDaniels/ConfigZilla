@@ -1,6 +1,6 @@
 ---
 layout: default
-title: The ConfigZilla Document Comment
+title: The ConfigZilla Document Comment (and finding git.exe)
 ---
 
 h1 #{document.title}
@@ -14,9 +14,11 @@ pre
         <!-- Last Git commit was e43b124d78c92ea27f971dbb80962efa435b8c46 on branch master -->
 
 p.
-    The Git comment only displays if you have Git, of course.
-    If you don't like these comments you can change their format or even suppress them completely.
-    There is also a third comment reserved for your use.
+    The Git comment only displays if you have Git, of course (see below for
+    how to tell ConfigZilla where git is located if it is not in your path).
+    If you don't like these comments you can change their format or even
+    suppress them completely. There is also a third comment reserved for your
+    use.
 
 h2 The czComment properties
 p.
@@ -51,4 +53,32 @@ pre
             <czComment2>none</<czComment2>
         </PropertyGroup>
 
-p
+h2 Locating Git
+p.
+    If git.exe is on your path stop reading now - ConfigZilla will find it
+    automatically. If it isn't then you need to tell ConfigZilla where to find
+    the exe. ConfigZilla first checks the "czGitExe" MSBuild property. You can
+    set this to a semi-colon separated list of paths to check in your
+    ConfigZilla.user file:
+
+pre
+    code(class="xml").
+        <PropertyGroup>
+            <czGitExe>C:\Somewhere\git.exe;C:\Elsewhere\git.exe</<czGitExe>
+        </PropertyGroup>
+
+p.
+    The property is a list so that you can cope with different users having
+    git installed in different places. The disadvantage of this technique is
+    that you have to set it in every project which is using ConfigZilla.
+
+p.
+    If ConfigZilla can't find git from your czGitExe it then goes on to check
+    for an environment variable called CZ_GIT_EXE. Again, this is a semi-colon
+    separated list of paths to try. Next, ConfigZilla will check 
+    "C:\Program Files (x86)\Git\bin" which is the default installation folder
+    for MSysGit. Finally, if none of those work, ConfigZilla will just try
+    running git.exe to see if it is on your path, and if all of those fail
+    you will get a warning in the build window and your git comment will be
+    blank.
+

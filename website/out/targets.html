@@ -1,0 +1,89 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Creating the .targets file | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Creating the .targets file</h1><p>The .targets file is where you specify what values you want your properties
+to have. In the vast majority of cases this will be determined by the value
+of the <strong>$(Configuration)</strong> built-in variable - this is what
+you have selected in the little combo-box at the top of Visual Studio:
+</p><img src="images/trg_configs.png"/><p>This example .targets file contains virtually
+everything you need to know about how MSBuild processes these files:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- No condition and processed first means this Property Group specifies the defaults --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">csConnStr1</span>&gt;</span>Data Source=localhost;Initial Catalog=Db1;Integrated Security=True;<span class="hljs-tag">&lt;/<span class="hljs-title">csConnStr1</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">csConnStr2</span>&gt;</span>Data Source=localhost;Initial Catalog=Db2;Integrated Security=True;<span class="hljs-tag">&lt;/<span class="hljs-title">csConnStr2</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span> <span class="hljs-attribute">Condition</span>=<span class="hljs-value">"'$(Configuration)'=='Release'"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">csConnStr1</span>&gt;</span>Data Source=PRDSQL;Initial Catalog=Db1;Integrated Security=True;<span class="hljs-tag">&lt;/<span class="hljs-title">csConnStr1</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">csConnStr2</span>&gt;</span>Data Source=PRDSQL;Initial Catalog=Db2;Integrated Security=True;<span class="hljs-tag">&lt;/<span class="hljs-title">csConnStr2</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- This is a call to String.Contains. You can use this technique to create "hierarchies" of build configurations.
+     See http://msdn.microsoft.com/en-us/library/dd633440.aspx --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">IsEurope</span>&gt;</span>$(Configuration.Contains("Europe"))<span class="hljs-tag">&lt;/<span class="hljs-title">IsEurope</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span> <span class="hljs-attribute">Condition</span>=<span class="hljs-value">"'$(IsEurope)'=='true'"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">csConnStr1</span>&gt;</span>Data Source=DEVSQL_EUROPE;Initial Catalog=Db1;Integrated Security=True;<span class="hljs-tag">&lt;/<span class="hljs-title">csConnStr1</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">csConnStr2</span>&gt;</span>Data Source=DEVSQL_EUROPE;Initial Catalog=Db2;Integrated Security=True;<span class="hljs-tag">&lt;/<span class="hljs-title">csConnStr2</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">prop1</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-title">prop1</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">prop2</span>&gt;</span>$(prop1) World!<span class="hljs-tag">&lt;/<span class="hljs-title">prop2</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- This example is how ConfigZilla sets the default document comment --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">czComment1</span> <span class="hljs-attribute">Condition</span>=<span class="hljs-value">"'$(czComment1)'==''"</span>&gt;</span> Built using configuration $(Configuration) on machine $(ComputerName) by $(UserName) at $([System.DateTime]::Now.ToString("dd-MMM-yyyy HH:mm")) <span class="hljs-tag">&lt;/<span class="hljs-title">czComment1</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+
+
+<span class="hljs-comment">&lt;!-- You can import other MSBuild files. Normally this would be at the
+     top (recall that files are processed top-to-bottom). --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">Import</span> <span class="hljs-attribute">Project</span>=<span class="hljs-value">"$(MSBuildProjectDirectory)\CommonSettings.targets"</span> /&gt;</span>
+</code></pre><ul><li>Properties can have any name you want (it's a good idea to use a prefix to avoid name clashes)</li><li>They need to be nested inside &lt;PropertyGroup&gt; elements</li><li>They are simple text strings and you can call .Net string methods on them</li><li>The file is processed from top to bottom and later definitions override earlier ones</li><li>A "Condition" can be attached to a PropertyGroup or an individual property. If it's false then the line is ignored.</li><li>Properties and conditions can refer to other properties using the $(name) syntax.</li><li>You can call .Net string instance and static methods on properties because they are just strings</li><li>You can test (czComment1) a property to see if it is already set by comparing it to a blank string</li><li>MSBuild files can import other MSBuild files using the <a href="http://msdn.microsoft.com/en-us/library/92x05xfs.aspx">Import</a> element. This is an advanced technique.</li><li>All existing MSBuild properties are available, including the important $(Configuration) property and most environment variables.
+If you increase the logging level of MSBuild to "normal" ConfigZilla will dump out the values of all properties it is considering.</li><li><a href="http://msdn.microsoft.com/en-us/library/ms171458.aspx">More on MSBuild properties in general.</a></li><li><a href="http://msdn.microsoft.com/en-us/library/ms164309.aspx">MSBuild Reserved and Well-Known Properties</a></li><li><a href="http://msdn.microsoft.com/en-us/library/bb629394.aspx">Common MSBuild Project Properties</a></li><li><a href="http://msdn.microsoft.com/en-us/library/c02as0cs.aspx">Macros for Build Commands and Properties</a> </li></ul><h2>Using per-project targets</h2><p>Normally you can simply define all your .targets under the Transforms folder in the ConfigZilla
+project, and because properties such as $(MSBuildProjectName) are evaluated in the context of
+the including project this is normally enough flexibility to achieve everything you want, for
+example you can given log files a unique name for each project using a construct such as this:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">filename</span>&gt;</span>C:\temp\$(MSBuildProjectName).log<span class="hljs-tag">&lt;/<span class="hljs-title">filename</span>&gt;</span>
+</code></pre><p>However, ConfigZilla will also look for a "Transforms" folder under each project
+that you are compiling, and will include those .targets files <strong>after</strong>
+the ones from ConfigZilla\Transforms. Should you need it, this gives you even more
+flexibility to override properties within each project (recall that properties are
+evaluated from top to bottom so the ones from your project will override the ConfigZilla
+properties).
+
+</p><h2>Hints and tips</h2><ul><li>It's a good idea to start your file with a PropertyGroup that has no conditions
+as this will establish defaults for all properties. I use this for the
+"Debug" configuration (in other words, my .target files do not contain explicit
+overrides for the Debug configuration).</li><li>You can override individual properties or entire groups with an appropriate condition.</li><li>It's a good idea to have the .target file be the only place that mentions the values - edit
+your .template.config file to have blank settings. That way you won't get confused
+about where something is being set.</li><li>By using properties in properties you can create a very DRYish .target file,
+for example instead of writing "localhost" in every connection string you
+could write $(DbServer).</li><li>If you have many configurations you can arrange them into "hierarchies"
+if you name them appropriately. For example there might be Debug.Europe.London,
+Debug.Europe.Madrid, Debug.Europe.Berlin. If they can all be treated the same
+way for some purposes use "Contains" or some other string method to determine
+if you are dealing with a European configuration and then act appropriately. Note
+that in the example above "Contains" returns a Boolean, which MSBuild
+then calls ToString() on, which is why the =='true' syntax works.</li><li>You can use conditions <a href="http://msdn.microsoft.com/en-us/library/7szfhaft.aspx">other than "=="</a>
+but for real power you will need to use the one-level-of-indirection
+technique shown above with &lt;IsEurope&gt;. This gives you access to the
+System.String methods and even regexes.</li><li>When ConfigZilla imports all the .targets files it first sorts them, so
+that they are imported in directory/file order. Therefore, if you want
+to define properties that are useful across more than one file (such as
+&lt;IsEurope&gt; above, then do it in the first file - that is, the
+first .targets file you come across when you expand the Transforms folder.</li></ul><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

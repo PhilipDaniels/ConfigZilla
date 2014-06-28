@@ -1,0 +1,7 @@
+body{overflow-y:scroll}
+body{margin:1em 5% 1em 5% !important}
+h1,h2,h3,h4,h5,h6,h7,h8{color:#b50c0c}
+h1{padding-top:0.5em;padding-bottom:0.5em;border-top:2px solid silver;border-bottom:2px solid silver}
+body em{color:#b50c0c}
+.imgleft{float:left;margin-right:5px}
+.hljs{padding:1.0em !important}

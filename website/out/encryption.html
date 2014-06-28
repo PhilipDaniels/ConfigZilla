@@ -1,0 +1,48 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Encrypting your .config files | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Encrypting your .config files</h1><p>If your config files contain sensitive information such as SQL passwords
+then it is a good idea to encrypt them. You can use the command line tool
+aspnet_regiis.exe to do this but ConfigZilla also supplies a graphical
+application that you can use to encrypt, decrypt, and view the encrypted
+settings. It is called "ConfigZilla.Encrypter" and is available in the
+<a href="https://github.com/PhilipDaniels/ConfigZilla">git repository</a>
+(it is not downloaded when you install ConfigZilla via NuGet, you need to
+clone the repo). Encrypting your config files has no impact on your
+application; .Net knows how to automatically decrypt sections and will
+present the unencrypted values to your application.
+</p><p>When you run the app (it will request admin privileges) the following
+window appears:
+</p><img src="images/enc_start.png"/><p>Type or browse for the config file you want to view. <strong>Even if you
+are using separate config files you should always enter the name of the
+main config file here.</strong> Also enter the name of the section you
+are interested in, for example "appSettings". The file will be loaded
+and down the left you will see the configuration file as it exists on disk.
+This may be encrypted. On the right hand side you will see the section
+in question, decrypted if necessary.
+</p><img src="images/enc_read.png"/><p>If you are using separate config files, as this example is, then you will
+see a tab called "Sub-config file" appear. This shows the contents of that
+file, AppSettings.config in this case:
+</p><img src="images/enc_appsettings_un.png"/><p>Hitting the "Encrypt Section" button will encrypt it:
+</p><img src="images/enc_appsettings_enc.png"/><p>The file is immediately re-read from disk so that you can verify that it
+has worked correctly. Note that the right hand side still shows the
+unencrypted values.
+
+</p><h2>Command line mode</h2><p>Encrypter also has a simple to use command line mode so you can use it
+during automatic deploys. The options are:
+</p><pre class="highlight"><code class="hljs undefined">-r section file     read the section and display in plain text
+-e section file     encrypt the section
+-d section file     decrypt the section
+</code></pre><h2>TODO</h2><ul><li>Encrypter always uses RSA and does not support DPAPI (yet).</li><li>Encrypter does not allow keys to be exported/imported, so you can only
+use it on the deployment machine. In other words, it is not possible to
+pre-encrypt your config files before you deploy them.</li></ul><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

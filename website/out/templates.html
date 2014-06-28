@@ -1,0 +1,89 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Creating .template.config files | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Creating .template.config files</h1><p>ConfigZilla applies your Xsl transforms to your .template.config to create
+the finished .config file. So how do you make a .template.config? Just
+copy an existing .config file and rename it as .template.config. Set
+its <strong>Build Action</strong> to "None" and <strong>Copy to Output
+Directory</strong> to "Do not copy". There will typically be two types of
+data in your template file: things that are fixed and never change (the
+boilerplate in a web.config for example), and things that you will be
+replacing with ConfigZilla. For the latter, I like to clean up my template
+by setting them to blank strings. For example, here is part of a template
+from the ConfigZilla samples:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">appSettings</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">""</span>/&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting2"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">""</span>/&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">appSettings</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">ConnectionStringsBlock</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">reportingSettings</span> <span class="hljs-attribute">PageSize</span>=<span class="hljs-value">""</span> <span class="hljs-attribute">Server</span>=<span class="hljs-value">""</span> <span class="hljs-attribute">RecipientEmail</span>=<span class="hljs-value">""</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">PaymentSettingsBlock</span> /&gt;</span>
+</code></pre><p>The "value" and "PageSize" are completely blank. It's a good idea to do
+this because it removes any doubt over where values in your generated
+app.config come from: they can't have come from your template, they must
+have come from your transformations.
+</p><p>This example demonstrates templating individual settings (in the appSettings
+block) but also inserting a complete section, the ConnectionStringsBlock
+will be replaced with something that looks like this:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">connectionString</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"...."</span> <span class="hljs-attribute">conenctionString</span>=<span class="hljs-value">"..."</span> <span class="hljs-attribute">etc.</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"...."</span> <span class="hljs-attribute">etc.</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"...."</span> <span class="hljs-attribute">etc.</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">connectionString</span>&gt;</span>
+</code></pre><p>If you typically need all the connection strings across all your projects
+this makes it very simple to add a new one, you just need to do it in the
+ConfigZilla project and every project that uses it will automatically have
+access to the new connection string. This is a great example of how ConfigZilla
+enables DRYish configuration.
+</p><h2>Using separate config files</h2><p>The .Net configuration system has a feature which allows you to break your
+app/web.config file up into smaller, separate files. Whether you find this
+more convenient or not depends on how large your file is getting. To
+break out a section into its own file, you use the 
+<a href="http://msdn.microsoft.com/en-us/library/system.configuration.sectioninformation.configsource(v=vs.110).aspx">configSource</a> property. In your main config file (app.config for example)
+write the following:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">reportingSettings</span> <span class="hljs-attribute">configSource</span>=<span class="hljs-value">"ReportingSettings.config"</span> /&gt;</span>
+</code></pre><p>This will cause this section to be loaded from the file ReportingSettings.config
+(you should set this file's Copy action to "Copy if newer" to ensure it
+gets into your bin directory). The content of the file is very simple:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">reportingSettings</span> <span class="hljs-attribute">PageSize</span>=<span class="hljs-value">""</span> <span class="hljs-attribute">Server</span>=<span class="hljs-value">""</span> <span class="hljs-attribute">RecipientEmail</span>=<span class="hljs-value">""</span> /&gt;</span>
+</code></pre><p>Note that after moving it into a separate file the section is <strong>NOT</strong>
+nested under the &lt;configurationSettings&gt; node. This is the reason for
+the use of the "|" in the <a href="transforms.html">xslt transformation file</a>: it
+ensures that your settings will be replaced whether you keep them in
+the main file or in separate files.
+</p><p>In order for this to work the section you are trying to break out must
+have a handler type defined; connectionStrings and appSettings
+already do, and any custom types you define for app settings, like the
+ReportingSettings used above also have them, but you can't expect to
+shift arbitrary blocks of text out of your config files and expect it
+to work.    
+</p><p><a href="encryption.html">Encryption</a> works fine with separate config
+files: the .Net configuration system is smart enough to encrypt the
+separate file if you ask it to encrypt a section that you have moved out.
+</p><p>The Samples solution contains a Console app which uses several separate
+config files.
+</p><h2>Searching for templates in sub-folders</h2><p>By default ConfigZilla only searches for templates in the root of your
+project but it is easy to change this by overriding the search pattern.
+Create a plain text file called ConfigZilla.user in the root of your
+project (the one with your templates, not the ConfigZilla project) and
+add the following code to it. "**" is the MSBuild syntax for "search
+recursively".
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">czTemplateFilePattern</span>&gt;</span>**\*.template.config<span class="hljs-tag">&lt;/<span class="hljs-title">czTemplateFilePattern</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+</code></pre><h2>Hints and Tips</h2><ul><li>If you are replacing a value in your XSLT it is a good idea to
+null it out in the template by setting the attribute to a blank string,
+or if your XSLT creates entire nodes or attributes you can delete
+it altogether.</li><li>Once you have your templates working remember to <a href="git.html">stop storing</a>
+your config files in your source control system.</li></ul><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

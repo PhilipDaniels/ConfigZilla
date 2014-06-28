@@ -1,0 +1,42 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Upgrading to version 2 | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h2>Version 1 vs version 2</h2><p>Version 2 is a significant upgrade in terms of ease-of-use and power compared to
+version 1. In brief, the difference is that
+</p><ul><li>Version 1 only generated one merged ConfigZilla.xslt file when you compiled
+the ConfigZilla project. Because of this properties such as $(MSBuildProjectName)
+were always made in the context of the ConfigZilla project. This made it difficult
+to use per-project customisations: you had to rely on Xsl Parameters, the syntax
+for which is rather clunky, and they couldn't be referenced in .targets files.</li><li>Version 2 generates a merged ConfigZilla.xslt file for each project in which you
+have installed ConfigZilla. Properties such as $(MSBuildProjectName) are always
+evaluated in the context of the project being compiled, <strong>NOT</strong>
+ConfigZilla. This makes it easy to compose per-project settings such as log file
+names. Furthermore, you can use them in .targets files, not just .xslt files.
+</li></ul><h2>Considerations for upgrading</h2><p>Upgrading via NuGet should be automatic. The upgrade script will delete two files
+from your ConfigZilla folder, "ConfigZillaCreateXslt.targets" and "ConfigZilla.Tasks.dll".
+Neither of these are needed anymore. References to them will also be removed
+from ConfigZilla.csproj, which may cause a warning about needing to reload the project file.
+</p><p>There are no changes to any of your .targets and .xslt files in your Transforms folder,
+except that the "czp" automatic Xsl Parameters are no longer gathered. If you were
+using these, please convert to using MSBuild properties instead.
+</p><p>You can now create a Transforms folder in each project being compiled; the contents
+of these will be included after the ConfigZilla\Transforms folder, thus giving
+the ability to override the values set in ConfigZilla\Transforms. Most users
+will not need this feature and will be able to keep all their transformations
+centralised in ConfigZilla\Transforms.
+</p><p>The XmlDeserializeConfigSectionHandler class now supports validation using
+System.ComponentModel.DataAnnotations attributes and the DefaultValue
+attribute. n.b. If upgrading from version 1.*, the copy of XmlDeserializeConfigSectionHandler
+in your ConfigZilla project will NOT be upgraded in case you have made your own
+customisations to it. To workaround this, create a ConsoleApp, install ConfigZilla
+into it, and then just copy-and-paste the class into your existing project.</p><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

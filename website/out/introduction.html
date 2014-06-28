@@ -1,0 +1,88 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Introduction | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Introduction</h1><p>ConfigZilla is a tool for streamlining the management of those pesky .config
+files in .Net projects. The key to the ConfigZilla approach is that it creates
+a project called "ConfigZilla" in your solution, and this project then becomes
+the central location in which you <em>specify the values</em> for your config
+settings and <em>create classes to access those settings</em>.
+</p><img src="images/intro_slnexp.png" alt="Solution Explorer with the ConfigZilla project."/><p>The design of ConfigZilla has been motivated by scalability: I continually
+asked myself the question "how will this work if I have 100 settings in 100
+projects with 100 different configurations?". Imagine needing to add or
+remove a connection string to all those projects, or needing to redirect your
+log4net logs for all websites and EXEs to a common folder, or to create
+bindings for a collection of WCF services that's different in each website.
+ConfigZilla can handle such situations with ease.
+</p><p>ConfigZilla uses <a href="http://msdn.microsoft.com/en-us/library/0k6kkbsd.aspx">MSBuild</a>
+and <a href="http://en.wikipedia.org/wiki/XSLT">XSL Transformations</a> to
+work its magic. Both of these are standard technologies with wide
+applicability. They are a little esoteric compared to C# and HTML, but most tasks
+you will need to do can be handled with "cookie cutter" recipes, indeed when you
+install ConfigZilla into your project it will create a project that includes some
+"out of the box" ready-to-run examples. I believe most developers will be
+able to handle 95% of their requirements with "cut-and-paste-and-edit" and
+a minimum of thinking...
+</p><h3>A 30-second Intro to the ConfigZilla project</h3><p>A C# class for type-safe access to your settings. Use this throughout your solution:</p><pre class="highlight"><code class="hljs cs">namespace CZ
+{
+    <span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> <span class="hljs-xmlDocTag">&lt;summary&gt;</span></span>
+    <span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> Class to return the AppSettings.</span>
+    <span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> <span class="hljs-xmlDocTag">&lt;/summary&gt;</span></span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> AppSettings
+    {
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> Setting1
+        {
+            <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> ConfigurationManager.AppSettings[<span class="hljs-string">"Setting1"</span>]; }
+        }
+    }
+}
+</code></pre><p>An MSBuild .targets file to set property values depending upon $(Configuration):</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">Project</span> <span class="hljs-attribute">xmlns</span>=<span class="hljs-value">"http://schemas.microsoft.com/developer/msbuild/2003"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- No condition and processed first means this Property Group specifies the defaults --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">appSetting1</span>&gt;</span>Value1Default<span class="hljs-tag">&lt;/<span class="hljs-title">appSetting1</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+  
+  <span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span> <span class="hljs-attribute">Condition</span>=<span class="hljs-value">"'$(Configuration)'=='Release'"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">appSetting1</span>&gt;</span>Value1Release<span class="hljs-tag">&lt;/<span class="hljs-title">appSetting1</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">Project</span>&gt;</span>
+</code></pre><p>An XSLT file to set the setting to the value (all these files are merged then applied to
+the *.template.config files in your projects):
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/appSettings/add[@key='Setting1']|/appSettings/add[@key='Setting1']"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting1)"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Replace &lt;AppSettingsBlock /&gt; with the whole set --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"AppSettingsBlock"</span> <span class="hljs-attribute">xml:space</span>=<span class="hljs-value">"preserve"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">appSettings</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting1)"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting2"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting2)"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">appSettings</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+</code></pre><h3>Other Features</h3><ul><li>If you use the <a href="http://msdn.microsoft.com/en-us/library/system.configuration.sectioninformation.configsource(v=vs.110).aspx">configSource</a> property to break up your app.config into
+smaller files ConfigZilla can handle it just as easily as if you were
+storing everything in one file. Furthermore, <em>if you decide to change
+approaches</em> then you won't need to change anything in your ConfigZilla
+project.</li><li>By default ConfigZilla only searches for files named *.template.config
+in the root of your project. But you can make this search recursive or
+change the filename pattern, or even explicitly pick some files to 
+transform.</li><li>Works with F5 debugging and web publication.</li><li>Adds a comment to your .config files saying when/who/where they were
+generated, and what solution configuration was in effect. Also adds a
+comment with the last Git hash and the effective branch. You can suppress
+these comments if you want.</li><li>Includes a simple WinForms application that can be used to encrypt and
+decrypt individual sections of your .config file. No more need to remember
+exactly where aspnet_regiis.exe is, just press the big friendly button!
+</li></ul><img src="images/intro_encrypter.png" alt="ConfigZilla.Encrypter Screenshot"/><h3>Dependencies</h3><p>ConfigZilla is built on MSBuild v4.0, which shipped with Visual Studio 2010
+and Microsoft .Net 4, so most modern machines should have it. Apart from
+that ConfigZilla is completely self contained, so once installed into a
+solution the it should compile anywhere, including any continuous
+integration environment that supports MSBuild.</p><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

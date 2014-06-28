@@ -1,0 +1,42 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Setting up .gitignore | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Setting up .gitignore</h1><p>After you have installed ConfigZilla and started to use it to generate your
+config files you will want to stop Git (or TFS) from tracking the config
+files because they are now <em>build products</em> rather than source files.
+Furthermore, their contents will be changing every time you do a build
+because the current time is included in the <a href="doccomments.html">document comment</a>.
+So you should add web.config, app.config or whatever.config to your .gitignore
+file.
+</p><pre class="highlight"><code class="hljs undefined">[Aa]pp.config
+[Aa]ppSettings.config
+[Cc]onnectionStrings.config
+[Ll]og4net.config
+[Rr]eportingSettings.config
+[Ss]omething.config
+# Care! MVC has nested web.configs int its views folder.
+# Only ignore the one in the root
+/MyWebApp/[Ww]eb.config
+</code></pre><p><strong>Care needed!</strong> As the comment in the file shows, there
+can be web.configs in folders other than the root. If you <em>aren't</em>
+generating them from templates then you should continue to track them.
+Web applications are the only ones I know of where this happens : a newly
+created MVC 4 app has a Web.config under its Views folder and the application
+won't run without it. After setting up your .gitignore it is a good idea to
+commit everything and clone your repo to a new location and check that
+everything is still working.
+</p><h2>Stopping tracking after-the-fact</h2><p>If your config files have already gotten into your git repository then you
+will need to add them .gitignore as above and stop tracking them. Issue
+the following command:
+</p><pre class="highlight"><code class="hljs undefined">git rm --cached &lt;filename&gt;
+</code></pre><p></p><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

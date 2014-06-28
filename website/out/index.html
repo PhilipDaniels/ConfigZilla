@@ -1,0 +1,34 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>ConfigZilla Manual Page | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>ConfigZilla</h1><div><img src="images/configzilla128x128.png" class="imgleft"/><p>ConfigZilla is a tool for streamlining the management of those pesky .config
+files in .Net projects. The key to the ConfigZilla approach is that it
+creates a project called "ConfigZilla" in your solution, and this project then
+becomes the central location in which you specify the values for your config
+settings and create classes to access those settings. ConfigZilla generates
+App.config files from App.template.configs which you create; this is done on
+a per-project basis whenever you compile your project.
+</p><p>ConfigZilla's key strength is its brevity: by making clever use of MSBuild
+properties and XSL transforms you can achieve a very DRYish result. You have
+one project in which to configure your settings rather than having to hunt
+through your projects for web.Debug.config files.
+ConfigZilla is useful in small .Net projects and has been designed to scale
+to large solutions with dozens of projects, configurations and settings.
+If you'd like a quick tour try the <a href="introduction.html">introduction</a>,
+and clone the repository at <a href="https://github.com/PhilipDaniels/ConfigZilla">Github</a>
+and browse the samples.
+</p><p><strong>Please note:</strong> If you are using ConfigZilla v1 upgrading to
+v2 is highly recommended because of the increased ease of use with respect
+to per-project customisations. Please read the <a href="upgradetov2.html">upgrade notes</a>
+for the (very minor) considerations. 
+</p></div><h3><a href="introduction.html">Introduction & motivation</a></h3><h3><a href="gettingstarted.html">Getting started</a></h3><h3><a href="templates.html">Creating the .template.config files</a></h3><h3><a href="targets.html">.target files: specifying the values for settings</a></h3><h3><a href="transforms.html">.xslt files: how to change *.template.config into *.config</a></h3><h3><a href="doccomments.html">The config file "Document Comment" and finding git.exe</a></h3><h3><a href="log4net.html">Using Log4Net</a></h3><h3><a href="encryption.html">Encrypting your .config files</a></h3><h3><a href="git.html">Setting up your .gitignore correctly</a></h3><p><strong>Contact Details:</strong> Philip dot Daniels 1971 at gmail dot com</p><p>or raise an issue on <a href="https://github.com/PhilipDaniels/ConfigZilla">Github</a>.</p><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

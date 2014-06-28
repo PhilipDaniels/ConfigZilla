@@ -1,0 +1,256 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>XSL Transforms | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Writing the .xslt file</h1><h2>XSL Transformations</h2><p>ConfigZilla uses a technology called <a href="http://en.wikipedia.org/wiki/XSLT">XSL Transformations</a> to
+create the config files. For each part of the template that you want to
+transform you write a small file that inserts, deletes or changes nodes
+and attributes. ConfigZilla will merge all the .xslt files you write into
+one large file called $(MSBuildProjectName).ConfigZilla.xslt (which can be found in your "obj"
+folder) and then apply it to each *.template.config file. This merging allows you to keep each individual
+.xslt file small and manageable.
+</p><p>The Transforms folder is recursively scanned for files matching the pattern
+*.czDefault.xslt. These files are always included in the merged ConfigZilla.xslt.
+Additionally, any files that match your current configuration, such as
+ProjectX.Debug.xslt (if you are in Debug mode) will also be included. This allows
+you to take special actions for particular configurations. However, the
+power of the ConfigZilla variable subsitution feature means that you will
+rarely need to do this.
+</p><h2>Learning by example</h2><p>XSLT is a complicated and powerful technology which can perform any transformation
+you want. Luckily the set of transformations we typically need for config
+files is quite small and simple to understand. So let's take a look at a
+typical XSLT file. This is from the ConfigZilla samples and is used for
+setting the &lt;appSettings&gt; block.
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">xsl:stylesheet</span> <span class="hljs-attribute">version</span>=<span class="hljs-value">"1.0"</span> <span class="hljs-attribute">xmlns:xsl</span>=<span class="hljs-value">"http://www.w3.org/1999/XSL/Transform"</span> <span class="hljs-attribute">xmlns:msxsl</span>=<span class="hljs-value">"urn:schemas-microsoft-com:xslt"</span> <span class="hljs-attribute">exclude-result-prefixes</span>=<span class="hljs-value">"msxsl"</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/appSettings/add[@key='Setting1']|/appSettings/add[@key='Setting1']"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting1)"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+  
+  <span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/appSettings/add[@key='Setting2']|/appSettings/add[@key='Setting2']"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting2"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting2)"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+  
+  <span class="hljs-comment">&lt;!-- Replace &lt;AppSettingsBlock /&gt; with the whole set --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"AppSettingsBlock"</span> <span class="hljs-attribute">xml:space</span>=<span class="hljs-value">"preserve"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">appSettings</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting1)"</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting2"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting2)"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">appSettings</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+  
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:stylesheet</span>&gt;</span>
+</code></pre><p>The first two lines (down to and including the &lt;stylesheet&gt; tag) are
+just XML boilerplate and are in fact stripped by ConfigZilla when it merges
+the files. I tend to include them however, because otherwise the Visual
+Studio XML editor will complain about the syntax. The body of the file then
+consists of a series of
+<a href="http://msdn.microsoft.com/en-us/library/ms256110%28v=vs.110%29.aspx">&lt;xsl:template&gt;</a>
+declarations. Each template
+consists of 2 parts. The first part, the match="..." statement, is written
+in <a href="http://en.wikipedia.org/wiki/XPath">XPath</a> syntax, and specifies
+which elements in the source *.template.config document to apply
+your template to. The second part is the body of the template, this says what
+to do when the template matches. These examples are very simple, the template
+bodies just consist of XML to be output. The "$(appSetting1)" variable
+will be replaced with the appropriate value as determined by
+your <a href="targets.html">.targets</a> file.
+</p><p>Let's deconstruct the XPath in the first template. Firstly, note that there
+is a '|' in the middle. This is an "or" and separates two separates XPath
+expressions, meaning that the template will match either of them. So the
+two XPaths are
+</p><pre class="highlight"><code class="hljs xml">/configuration/appSettings/add[@key='Setting1']
+
+or
+
+/appSettings/add[@key='Setting1']
+</code></pre><p>"/" means "root of the document, so "/configuration" means look for
+a node called "configuration" directly under the root. Then we ask
+for an "appSettings" node under that, and then an "add" node under
+that. Not surprisingly, this matches the structure of the typical
+app.config file:
+</p><pre class="highlight"><code class="hljs cs">&lt;?xml version=<span class="hljs-string">"1.0"</span> encoding=<span class="hljs-string">"utf-8"</span> ?&gt;
+&lt;configuration&gt;
+  &lt;configSections&gt;
+    &lt;section name=<span class="hljs-string">"reportingSettings"</span> type=<span class="hljs-string">"CZ.ReportingSettings, ConfigZilla"</span> requirePermission=<span class="hljs-string">"false"</span> /&gt;
+    &lt;section name=<span class="hljs-string">"PaymentSettings"</span> type=<span class="hljs-string">"CZ.PaymentSettings, ConfigZilla"</span>/&gt;
+  &lt;/configSections&gt;
+  
+  &lt;appSettings&gt;
+    &lt;add key=<span class="hljs-string">"Setting1"</span> <span class="hljs-keyword">value</span>=<span class="hljs-string">""</span> /&gt;
+    &lt;add key=<span class="hljs-string">"Setting2"</span> <span class="hljs-keyword">value</span>=<span class="hljs-string">""</span> /&gt;
+  &lt;/appSettings&gt;
+  
+...
+</code></pre><p>The <strong>[@key='Setting'1]</strong> syntax is a further filter: it means
+"only match elements with an attribute called 'key' which has the value
+of 'Setting1'". In other words, this matches a <em>particular</em> appSetting/add
+element rather than them all.
+</p><p>The second XPath expression after the '|' matches exactly the same thing <em>but
+without the leading "configuration" node</em>. It becomes effective if
+you split your template files into <a href="templates.html">separate files</a>,
+because the sub-files don't have the &lt;configuration&gt; node, they just look like this:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">appSettings</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">""</span>/&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting2"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">""</span>/&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">appSettings</span>&gt;</span>
+</code></pre><p>You don't have to use the '|', but it's handy to have in case you decide
+to split or not-split at a later date. It would also be possible to use
+the XPath expression "//appSettings" which will find the appSettings
+node wherever it is in the document structure. You would only need one
+XPath expression if you used this, but I tend to avoid it because of the
+(rare) chance that I might add some XML in the future which matches the
+expression when I didn't want it to. It's also slow.
+</p><p>Both of the templates we have discussed so far are "node rewriting templates".
+They completely replace the XML they match with new XML. An alternative would
+be to just set the "value" attribute, but in fact this is a bit more verbose and
+the node-rewriting technique is often easier to grok.
+</p><p>The final template in the example takes this node-rewriting technique a
+step further. It replaces the tag &lt;AppSettingsBlock /&gt; with an entire
+&lt;appSettings&gt;...&lt;/appSettings&gt; section containing all settings.
+This is a great way of cutting your template files down to size. Plus,
+if you use this technique and want to add a new app setting or connection string
+to all your projects you only need to do it in the .xslt file.
+</p><h2>Setting attributes</h2><p>The ReportingSettings in the samples uses this XML syntax in the config file:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">reportingSettings</span> <span class="hljs-attribute">PageSize</span>=<span class="hljs-value">""</span> <span class="hljs-attribute">Server</span>=<span class="hljs-value">""</span> <span class="hljs-attribute">RecipientEmail</span>=<span class="hljs-value">""</span> /&gt;</span>
+</code></pre><p>and this is the XSLT used to set the attribute values:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/reportingSettings/@PageSize|/reportingSettings/@PageSize"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">xsl:attribute</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"PageSize"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:value-of</span> <span class="hljs-attribute">select</span>=<span class="hljs-value">"'$(rsPageSize)'"</span>/&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:attribute</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/reportingSettings/@Server|/reportingSettings/@Server"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">xsl:attribute</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Server"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:value-of</span> <span class="hljs-attribute">select</span>=<span class="hljs-value">"'$(rsServer)'"</span>/&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:attribute</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/reportingSettings/@RecipientEmail|/reportingSettings/@RecipientEmail"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">xsl:attribute</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"RecipientEmail"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:value-of</span> <span class="hljs-attribute">select</span>=<span class="hljs-value">"'$(rsRecipientEmail)'"</span>/&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:attribute</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+</code></pre><p>"@PageSize" means match an attribute called PageSize. Then the body of the
+template is applied. This replaces the matched element of 'PageSize=""'
+with a new attribute called PageSize and the appropriate value.
+</p><p>Attribute-setting templates like this are most useful when you must
+change a specific attribute and leave the rest unchanged. Setting the
+"Debug" flag on the compilation node in a web app is a good example. We
+definitely don't want to change any other attributes that may be set:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/system.web/compilation/@debug|/system.web/compilation/@debug"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:attribute</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"debug"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">xsl:value-of</span> <span class="hljs-attribute">select</span>=<span class="hljs-value">"'$(wsDebugFlag)'"</span>/&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:attribute</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+</code></pre><h2>Setting text values (inside nodes)</h2><p>The PaymentSettings uses this style of XML:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">PaymentSettings</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">PaymentSystem</span>&gt;</span>Tom<span class="hljs-tag">&lt;/<span class="hljs-title">PaymentSystem</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">URL</span>&gt;</span>Dick<span class="hljs-tag">&lt;/<span class="hljs-title">URL</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">Timeout</span>&gt;</span>Harry<span class="hljs-tag">&lt;/<span class="hljs-title">Timeout</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PaymentSettings</span>&gt;</span>
+</code></pre><p>To replace Tom, Dick and Harry with the correct values you need to use
+the text() selector:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"/configuration/PaymentSettings/PaymentSystem/text()|/PaymentSettings/PaymentSystem/text()"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:text</span>&gt;</span>$(payPaymentSystem)<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:text</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+etc.
+</code></pre><p>This will match "Tom" and replace it with whatever the value of $(payPaymentSystem) is.
+</p><h2>Dealing with special characters (quoting)</h2><p>In any type of text-replacement work you will eventually come across the need to escape, or quote,
+your strings. ConfigZilla is no different, but there is a gotcha - there are <em>two</em>
+technologies in use, MSBuild and Xslt, and they use different quoting techniques. To quote in
+MSBuild you need to use hexadecimal ASCII character codes, while to quote in Xslt the easiest way is to
+use CDATA blocks. Here is an example using Entity Framework. Let's say your .xslt
+file has an EF connection string with the form:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"BlogContext"</span>
+    <span class="hljs-attribute">connectionString</span>=<span class="hljs-value">"metadata=res://*/BloggingModel.csdl|
+                     res://*/BloggingModel.ssdl|
+                     res://*/BloggingModel.msl;
+                     provider=System.Data.SqlClient
+                     provider connection string=
+                     &amp;‌quot;data source=(localdb)\v11.0;
+                     initial catalog=Blogging;
+                     integrated security=True;
+                     multipleactiveresultsets=True;&amp;‌quot;"</span>
+    <span class="hljs-attribute">providerName</span>=<span class="hljs-value">"System.Data.EntityClient"</span> /&gt;</span>
+    </code></pre><p>Note the two embedded <em>&#38;quot;</em>s. They will get translated into the " character by
+MSBuild, breaking your template. The solution is to replace the 6 characters
+in <em>&#38;quot;</em> with their <a href="http://ascii.cl/">ASCII codes</a>, which are
+"%26%71%75%6F%74%3B", hence this will work:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"BlogContext"</span>
+    <span class="hljs-attribute">connectionString</span>=<span class="hljs-value">"metadata=res://*/BloggingModel.csdl|
+                     res://*/BloggingModel.ssdl|
+                     res://*/BloggingModel.msl;
+                     provider=System.Data.SqlClient
+                     provider connection string=
+                     %26%71%75%6F%74%3B;data source=(localdb)\v11.0;
+                     initial catalog=Blogging;
+                     integrated security=True;
+                     multipleactiveresultsets=True;%26%71%75%6F%74%3B"</span>
+    <span class="hljs-attribute">providerName</span>=<span class="hljs-value">"System.Data.EntityClient"</span> /&gt;</span>
+    </code></pre><p>In this particular case, you may also be able to use a single quote rather
+than a double quote.
+</p><p>Here is an example of quoting on the Xsl-side. If you try and include the
+following log4net Xml in a template:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">layout</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"log4net.Layout.PatternLayout"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"%date{yyyy'-'MM'-'dd HH':'mm':'ss'.'fff}"</span> /&gt;</span>
+</code></pre><p>you will get error messages around the <em>yyyy</em> part, because Xsl uses "{" as a delimiter
+for <a href="http://www.w3.org/TR/xslt#attribute-value-templates">attribute value templates</a>.
+You can prevent this error by simply doubling up the braces
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">layout</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"log4net.Layout.PatternLayout"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"%date{{yyyy'-'MM'-'dd HH':'mm':'ss'.'fff}}"</span> /&gt;</span>
+</code></pre><p>An alternative and more powerful technique is to use CDATA blocks which can escape anything. You
+may need to wrap them with an xsl:text element:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span> <span class="hljs-attribute">match</span>=<span class="hljs-value">"..."</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:text</span> <span class="hljs-attribute">disable-output-escaping</span>=<span class="hljs-value">"yes"</span>&gt;</span>
+    <span class="hljs-cdata">&lt;![CDATA[
+    &lt;layout type="log4net.Layout.PatternLayout" value="%date{yyyy'-'MM'-'dd HH':'mm':'ss'.'fff}" /&gt;
+    ]]&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">xsl:text</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+
+</code></pre><h2>Using per-project targets</h2><p>ConfigZilla will include templates from a per-project Transforms folder in the 
+same way as it does for <a href="targets.html">targets</a>. As for targets, it is likely
+to be rare that you need this (I find it much more preferable to keep all my targets
+and templates gathered in the central ConfigZilla folder). Because all templates
+are written into the merged .xslt file, you may need to look into the
+<a href="http://lenzconsulting.com/how-xslt-works/#conflict_resolution_for_template_rules">conflict resolution rules</a>
+if you want to use this technique.
+
+</p><h2>Using Xsl Parameters</h2><p>It is possible to pass <a href="http://www.w3.org/TR/xslt#variables">Xsl Parameters</a> 
+to the ConfigZilla.xslt file. (This technique was used in ConfigZilla v1 to get access to
+properties like $(MSBuildProjectName) but it isn't needed for this purpose any longer
+because the Xslt file is now generated for each project that you are compiling).
+To set a parameter, create an MSBuild file called ConfigZilla.user in the root of your 
+project and define your Xsl parameters like this (you must use the property name
+"czXslParameterString"):
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">PropertyGroup</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">czXslParameterString</span>&gt;</span>
+    <span class="hljs-cdata">&lt;![CDATA[
+    &lt;Parameter Name='czpMyParam1' Value='some value'/&gt;
+    &lt;Parameter Name='czpMyParam2' Value='You can use $(Substitution) here as well'/&gt;
+    ]]&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">czXslParameterString</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PropertyGroup</span>&gt;</span>
+</code></pre><p>To use it in your template you need to declare the parameter and then use <strong>value-of</strong>:
+</p><pre class="highlight"><code class="hljs xml">// outside a template:
+<span class="hljs-tag">&lt;<span class="hljs-title">xsl:param</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"czpMyParam1"</span> /&gt;</span>
+
+// then:
+<span class="hljs-tag">&lt;<span class="hljs-title">xsl:template</span>&gt;</span>
+    ...
+    <span class="hljs-tag">&lt;<span class="hljs-title">xsl:value-of</span> <span class="hljs-attribute">select</span>=<span class="hljs-value">"$czpMyParam1"</span> /&gt;</span>
+    ...
+<span class="hljs-tag">&lt;/<span class="hljs-title">xsl:template</span>&gt;</span>
+</code></pre><h2>Further reading</h2><ul><li>The XsltSnippets.txt file provided in the ConfigZilla project contains more
+template examples.</li><li>Evan Lenz's article <a href="http://lenzconsulting.com/how-xslt-works/">How XSLT Works</a>
+goes into much more detail than I have here and is highly recommended.</li><li>The <a href="http://msdn.microsoft.com/en-us/library/ms256086(v=vs.110).aspx">Microsoft
+documentation on XPath</a> contains lots of example expressions.</li><li>If you want to test your XSLT online, <a href="http://xslt.online-toolz.com/tools/xslt-transformation.php">OnlineToolz</a> is pretty good.</li></ul><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

@@ -1,0 +1,93 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Setting up Log4Net | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Setting up Log4Net</h1><p><a href="http://logging.apache.org/log4net/">Log4Net</a> is a great logging system
+but can be a little tricky
+to setup. The ConfigZilla samples contain a log4net.template.config
+which you can copy-and-paste into your own projects. It gives you 3
+appenders (i.e. places where the log messages go).
+</p><ul><li>A <a href="http://logging.apache.org/log4net/release/sdk/log4net.Appender.DebugAppender.html">DebugAppender</a> which logs messages to the Visual Studio
+debug window.</li><li>A <a href="http://logging.apache.org/log4net/release/sdk/log4net.Appender.RollingFileAppender.html">RollingFileAppender</a> which logs messages to a file
+whose name is based on the name of the application, for example
+"myapp.exe.2014-03-12.log".</li><li>A <a href="http://logging.apache.org/log4net/release/sdk/log4net.Appender.AdoNetAppender.html">SqlAppender</a>
+which logs to a database. This last one is disabled in the samples
+because you don't have the database setup, but the log4net.template.config
+file contains the instructions for creating the logging table.
+</li></ul><h2>Setup</h2><p>It's a good idea to keep the log4net config in a separate file because it tends
+to be rather long. Remember to add the [assembly] attribute as follows (another benefit
+of doing it this way is that you don't need the "configSource" setting in your
+app.config file).
+</p><pre class="highlight"><code class="hljs cs">[assembly: log4net.Config.XmlConfigurator(ConfigFile = <span class="hljs-string">"log4Net.config"</span>, Watch = <span class="hljs-keyword">true</span>)]
+</code></pre><p>In web apps, set the build type of the log4net file to "Content", this will leave it in the
+root of your website rather than copying it into the bin folder. It seems to be necessary to
+add this into your Application_Start() event: 
+</p><pre class="highlight"><code class="hljs cs">log4net.Config.XmlConfigurator.Configure(<span class="hljs-keyword">new</span> FileInfo(Server.MapPath(<span class="hljs-string">"~/log4net.config"</span>)));
+</code></pre><p>Create a logger by just copying and pasting this line. It uses fully
+qualified type names and reflection so you don't need to add any "using" statements
+or edit the logger name:
+</p><pre class="highlight"><code class="hljs cs"><span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+</code></pre><p>If you are having trouble getting log4net to work, add the following app setting to
+your config file. This turns on log4net's internal debugging.
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">appSettings</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"log4net.Internal.Debug"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"true"</span>/&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">appSettings</span>&gt;</span>
+</code></pre><p></p><h2>Associating "Context Data" with log messages using ThreadContext</h2><p>A powerful feature of log4net is <a href="http://logging.apache.org/log4net/release/manual/contexts.html">ThreadContext</a>
+which allows you to associate arbitrary data with the logging system and then log it
+automatically when you log a message. For example, if you are dealing with a particular
+User Id you could associate that User Id with the context, and every message you log
+will come out with the User Id attached. The question arises as to how to cancel
+the association: logging the associated data in the wrong context will be confusing.
+The IDisposable interface provides one way of doing this automatically. The ConsoleSingleConfig
+sample contains an example of setting up an "associated int" and an "associated string"
+with the log using two classes, AssocInt and AssocString. These are then dumped
+out in the SQL log (but not the file logs) via these parameters:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">parameter</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">parameterName</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"@assoc_int"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">dbType</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"Int64"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">layout</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"log4net.Layout.RawPropertyLayout"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">key</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"AssocInt"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">layout</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">parameter</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">parameter</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">parameterName</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"@assoc_string"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">dbType</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"String"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">size</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"255"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">layout</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"log4net.Layout.PatternLayout"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"%property{AssocString}"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">parameter</span>&gt;</span>
+</code></pre><p>You can setup as many different types of associated data as you want, it depends
+on the needs of your app.
+</p><h2>Filtering logging</h2><h3>By level</h3><p>You can set the <strong>level</strong> filter on a logger, including the root logger.
+Only messages with at least that level will be logged.
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">logger</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"My.Name.Space.Class"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">level</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"ERROR"</span> /&gt;</span>
+    ...
+<span class="hljs-tag">&lt;/<span class="hljs-title">logger</span>&gt;</span>
+</code></pre><h3>Routing classes (loggers) to different destinations</h3><p><a href="http://www.beefycode.com/post/Log4Net-Tutorial-pt-5-Using-Logger-Objects.aspx">Add another logger</a>
+with the <strong>name</strong> property set to the name of the class or namespace
+that you want to isolate. Add an appender to the logger (it's best to make an
+appender just for this logger).
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">logger</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"My.Name.Space"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">level</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"ALL"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">appender-ref</span> <span class="hljs-attribute">ref</span>=<span class="hljs-value">"MyFileAppender /&gt;
+&lt;/logger&gt;
+
+</span></span></code></pre><h3>Filtering</h3><p>Filtering is <a href="http://www.beefycode.com/post/Log4Net-Tutorial-pt-7-Filters.aspx">applied at the appender level.</a>
+You can apply various filters to the log messages that are coming through. For example,
+to block all messages from a namespace you can do this:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">appender</span> <span class="hljs-attribute">....</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">filter</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"log4net.Filter.LoggerMatchFilter"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">loggerToMatch</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"My.Name.Space"</span> /&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">acceptOnMatch</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"false"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">filter</span>&gt;</span>
+    </code></pre><h2>Further reading</h2><ul><li>A <a href="http://www.codeproject.com/Articles/140911/log4net-Tutorial">good tutorial</a>.</li><li><a href="http://www.beefycode.com/post/Log4Net-Tutorials-and-Resources.aspx">This guy</a>
+has a good set of articles on log4net.</li></ul><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

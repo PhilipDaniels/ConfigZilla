@@ -1,0 +1,58 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>The ConfigZilla Document Comment (and finding git.exe) | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>The ConfigZilla Document Comment (and finding git.exe)</h1><p>When ConfigZilla generates your .config file it stamps the document with two
+comments that look like this:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-comment">&lt;!-- Built using configuration Release on machine NOFANWINBOX by Phil at 22-Feb-2014 16:23 --&gt;</span>
+<span class="hljs-comment">&lt;!-- Last Git commit was e43b124d78c92ea27f971dbb80962efa435b8c46 on branch master --&gt;</span>
+</code></pre><p>The Git comment only displays if you have Git, of course (see below for
+how to tell ConfigZilla where git is located if it is not in your path).
+If you don't like these comments you can change their format or even
+suppress them completely. There is also a third comment reserved for your
+use.
+</p><h2>The czComment properties</h2><p>There are 3 MSBuild properties called czComment1, czComment2 and czComment3.
+To set them, create a file called "ConfigZilla.user" in the root of the ConfigZilla
+project. This is an MSBuild file. Set Build Action to None and Copy to Never. Add
+your own definitions for the 3 properties:
+</p><pre class="highlight"><code class="hljs undefined">&lt;PropertyGroup&gt;
+    &lt;czComment1&gt;I wish I had found...&lt;/&lt;czComment1&gt;
+    &lt;czComment2&gt;ConfigZilla sooner!&lt;/&lt;czComment2&gt;
+&lt;/PropertyGroup&gt;
+</code></pre><p>You can use any MSBuild properties you would like. For example, the default
+comment is formed from this expression:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">czComment1</span> <span class="hljs-attribute">Condition</span>=<span class="hljs-value">"'$(czComment1)'==''"</span>&gt;</span> Built using configuration $(Configuration) on machine $(ComputerName) by $(UserName) at $([System.DateTime]::Now.ToString("dd-MMM-yyyy HH:mm")) <span class="hljs-tag">&lt;/<span class="hljs-title">czComment1</span>&gt;</span>
+</code></pre><p>To completely suppress czComment1 or czComment2 set its value to "none". czComment3
+is blank by default and won't appear unless you set it to something.
+</p><pre class="highlight"><code class="hljs undefined">&lt;PropertyGroup&gt;
+    &lt;czComment1&gt;none&lt;/&lt;czComment1&gt;
+    &lt;czComment2&gt;none&lt;/&lt;czComment2&gt;
+&lt;/PropertyGroup&gt;
+</code></pre><h2>Locating Git</h2><p>If git.exe is on your path stop reading now - ConfigZilla will find it
+automatically. If it isn't then you need to tell ConfigZilla where to find
+the exe. ConfigZilla first checks the "czGitExe" MSBuild property. You can
+set this to a semi-colon separated list of paths to check in your
+ConfigZilla.user file:
+</p><pre class="highlight"><code class="hljs undefined">&lt;PropertyGroup&gt;
+    &lt;czGitExe&gt;C:\Somewhere\git.exe;C:\Elsewhere\git.exe&lt;/&lt;czGitExe&gt;
+&lt;/PropertyGroup&gt;
+</code></pre><p>The property is a list so that you can cope with different users having
+git installed in different places. The disadvantage of this technique is
+that you have to set it in every project which is using ConfigZilla.
+</p><p>If ConfigZilla can't find git from your czGitExe it then goes on to check
+for an environment variable called CZ_GIT_EXE. Again, this is a semi-colon
+separated list of paths to try. Next, ConfigZilla will check 
+"C:\Program Files (x86)\Git\bin" which is the default installation folder
+for MSysGit. Finally, if none of those work, ConfigZilla will just try
+running git.exe to see if it is on your path, and if all of those fail
+you will get a warning in the build window and your git comment will be
+blank.</p><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>

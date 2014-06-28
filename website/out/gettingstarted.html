@@ -1,0 +1,227 @@
+<!DOCTYPE html><!--if lt IE 7html.no-js.lt-ie9.lt-ie8.lt-ie7(lang="en")--><!--if IE 7html.no-js.lt-ie9.lt-ie8(lang="en")--><!--if IE 8html.no-js.lt-ie9(lang="en")--><!--if gt IE 8html.no-js(lang="en")--><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Getting Started | ConfigZilla</title><meta name="description" content=""><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="favicon.ico?v=2"><!--Place favicon.ico and apple-touch-icon.png in the root directory--><meta name="generator" content="DocPad v6.69.0" /><link  rel="stylesheet" href="css/vendor/normalize.css" /><link  rel="stylesheet" href="css/vendor/main.css" /><link  rel="stylesheet" href="css/style.css" /><link  rel="stylesheet" href="css/obsidian.css" /><script src="js/vendor/modernizr-2.6.2.min.js"></script></head><body><!--if lt IE 7p.browsehappy
+ |You are using an 
+ strong
+  |outdated browser
+ |. Please 
+ a(href="http://browsehappy.com/")
+  |upgrade your browser
+ |to improve your experience.
+ --><h1>Getting Started</h1><p>Firstly, I recommend that you clone the complete ConfigZilla repository from
+<a href="https://github.com/PhilipDaniels/ConfigZilla">https://github.com/PhilipDaniels/ConfigZilla</a>
+because it contains some Samples that demonstrate most of the ConfigZilla
+features. (Open the ConfigZillaSamples.sln in the Samples folder). </p><h3>Install ConfigZilla using NuGet</h3><p>From the package manager console, do</p><pre class="highlight"><code class="hljs bash">install-package ConfigZilla
+</code></pre><p>or use the GUI:</p><img src="images/gs_packagemanagergui.png" alt="Package Manager GUI"/><p>Install ConfigZilla into every project that you want to access your
+configuration settings from. This will do two things. The first and most
+obvious is that it will create a project called "ConfigZilla" in your solution
+and your other projects will be given a reference to ConfigZilla too.
+We'll take a quick tour in a moment. The second, and much less obvious, is
+that it will install an MSBuild ".targets" file into the .csproj of each
+project that you added ConfigZilla to. You can see this by right-clicking
+the project, selecting "Unload Project", then editing the project file. Down
+the bottom you will find a line like this:</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">Import</span> <span class="hljs-attribute">Project</span>=<span class="hljs-value">"..\packages\ConfigZilla.2.0.0\build\ConfigZilla.targets"</span> /&gt;</span>
+</code></pre><p>That .targets file contains the instructions that will transform your
+*.template.config files into the final *.config files. It hooks into your
+build process so that the transformation will be made before your project
+builds. This means the *.config file will be ready and waiting for your
+build to rename to MyApp.exe.config or to publish. The transformation itself
+is based upon the contents of the ConfigZilla project, so let's take a look
+at that before we get into creating templates.
+</p><h3>A Quick Tour of the ConfigZilla Project</h3><p>Here's a screenshot of a typical ConfigZilla project. In fact, this is from
+the ConfigZilla samples.</p><img src="images/gs_czproject.png" alt="The ConfigZilla project."/><p>The newly-created project includes some examples to get you started: 
+<strong>feel free to delete anything you don't need</strong> although it's
+a lot more likely you will be adding things.</p><p><strong>The Transforms folder.</strong> This is where the clever stuff
+happens. There are two types of files. <strong>*.targets</strong> files are
+MSBuild files that are used to define <strong>properties</strong>. The value
+of the properties can be controlled using MSBuild Conditional statements,
+typically you check the $(Configuration) setting to figure out if you are in
+Debug, Release etc. The second type of file is the <strong>*.xslt</strong>
+file. These files use XSL Transformations to change XML. If you check the
+example appSettings.czDefault.xslt file you will notice it contains what
+looks like an MSBuild property expression, $(appSetting1):</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">add</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">"Setting1"</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"$(appSetting1)"</span> /&gt;</span>
+</code></pre><p>In fact, that is exactly what it is. ConfigZilla works like this:</p><ol><li>The build of the ConfigZilla project begins. This will probably be first
+because most projects will include ConfigZilla so that they can reference
+the config settings. <strong>The contents of the Transform folder is ignored
+at this time.</strong></li><li>Compilation of projects that ConfigZilla is installed in begins (call it ProjectX).
+ConfigZilla loads all the *.targets files from under the ConfigZilla\Transforms
+folder <strong>and then, optionally,</strong> ProjectX\Transforms,
+and evaluates them in the context of ProjectX and the current build configuration.
+This results in each property being given a value. <a href="targets.html">More on targets.</a></li><li>Next ConfigZilla reads all the applicable .xslt files from under the 
+ConfigZilla\Transforms folder <strong>and then, optionally,</strong> ProjectX\Transforms,
+and looks for property expressions $(likethis). If it
+finds one it replaces it with the value of that property as worked out during 
+the previous phase. If there is no
+matching property then the text is just passed through as-is. ConfigZilla
+will always include a file called *.czDefaults.xslt and it will also
+optionally include another file if its name matches the current solution
+configuration: ProjectX.Release.xslt for example. But the expressiveness of
+the *.targets files means you usually only need the czDefaults file.
+<a href="transforms.html">More on transforms.</a>. If you would like to
+see what ConfigZilla is doing try increasing the verbosity of MSBuild
+to "normal".</li><li>All the *.xslt files are then concatenated together and written out, together
+with a bit of boilerplate, into a single file called ProjectX.ConfigZilla.xslt, which
+will be in the "obj" folder of the ConfigZilla project. You can examine
+this file in Visual Studio or a text editor if you want to check it; 
+<a href="exampleconfigzilla.xslt">here is an example.</a></li><li>That's all the hard work done. The ProjectX.ConfigZilla.xslt file contains all the
+information necessary to transform *.template.config into *.config. The next
+step in the build process simply finds all your *.template.config files
+and applies the Xslt to them using the built-in MSBuild target called
+<a href="http://msdn.microsoft.com/en-us/library/ff598688.aspx">XslTransformation</a>,
+and writes the result to *.config.</li></ol><p>Two points to note. Firstly the structure of the Transforms folder is not fixed:
+you can create subfolders to any depth you want, and with any name, ConfigZilla
+simply scans it recursively looking for *.targets and *.xslt files. Secondly,
+the property substitutions that ConfigZilla makes in the *.xslt files are 
+simply MSBuild property values, this means that the full set of standard
+MSBuild properties such as $(Configuration) and $(MSBuildProjectName)
+are available to you <strong>and will be evaluated in the context of the project being compiled</strong>.
+A corollary of this, coupled with the fact that ConfigZilla <strong>amalgamates everything
+together</strong>, is that it is a a good idea to use a <strong>variable prefix</strong>
+such as "app" for app settings and "cs" for connection strings. This will stop
+any inadvertent clashes.</p><p><strong>Strongly typed accessor classes.</strong> The C# files AppSettings.cs,
+ConnStrings.cs etc., are to be used within your solution to read the values
+of settings. They are in the namespace "CZ", but you can change this if you
+want. The classes here are only examples and ConfigZilla does not regenerate
+them. Example usage:</p><pre class="highlight"><code class="hljs cs"><span class="hljs-keyword">string</span> connStr = CZ.ConnStrings.ConnStr1;
+</code></pre><p>If you don't want some of the examples just delete them.</p><p><strong>XsltSnippets.txt.</strong> This is a documentation file that includes
+various "snippets" or "recipes" for transforming XML with XSLT - tasks such
+as rewriting elements, setting their text values, or changing attributes. It
+is intended as a quick reference for the common operations to save you from
+Googling.</p><p><strong>XmlDeserializeConfigSectionHandler.cs.</strong> This is a base class
+that can be used to quickly implement custom configuration sections. We will
+see an example below.
+</p><h3>Using ConfigZilla in projects</h3><p>The notes here apply to console applications, class libraries, test projects,
+WinForms applications and all other project types. Web apps give you a few
+more things to think about (see below). You don't have to do things in this
+order, you might start by preparing the .targets files for example, but all
+three steps need completing before templates will be processed.
+</p><h4>1. Create your templates</h4><p>Your final config files are created by copying a template and replacing
+some values in it. Template files are very easy to create - at a minimum all
+you need to do is copy a .config file and rename it as .template.config.
+But it's usually a good idea to blank out the values you will be replacing
+to prevent confusion about where they are coming from.
+<a href="templates.html">More on creating templates</a>.
+</p><h4>2. Write your XSLT transforms to insert your values into your template</h4><p>The job of the XSLT transformation is to take your .template.config file
+and transform it into a valid .config file. This is usually achieved by
+a combination of</p><ul><li>Completely replacing or removing nodes (elements in XSLT-speak)</li><li>Setting attribute values</li></ul><p>You write the XSLT inside a file in the Transforms folder - this folder is
+special, ConfigZilla always looks for a folder of this name. However, you
+can split up your transformations into separate files, each one of which
+is responsible for a certain part of your config files. This helps to keep
+the files manageable. ConfigZilla will concatenate all your XSLT files 
+together into one large file called ConfigZilla.xslt in the output folder.
+<a href="transforms.html">Read more about how to write the .xslt files.</a>
+The *.xslt files used in ConfigZilla are special because you can have
+MSBuild properties substituted into them by using the syntax "$(AnyProperty)"
+(without the quotes). Arranging for $(AnyProperty) to have the right value
+is done in the .targets file.
+</p><h4>3. Write your .targets files to set property values</h4><p>The .targets file is where you create MSBuild properties and give them values.
+ConfigZilla dynamically loads your .targets file and evaluates it in the
+context of the project being compiled and the current solution configuration
+such as Debug, Release etc. You don't need to know much about MSBuild to
+<a href="targets.html">write a valid targets file</a>, but the important thing
+to note is that all <a href="http://msdn.microsoft.com/en-us/library/ms171458.aspx">properties are simple strings</a>.
+</p><h4>4. Write C# classes to provide type-safe access to your settings.</h4><p>It's a good idea to write some C# classes to give you easy and type-safe
+access to your configuration settings. ConfigZilla contains examples for
+AppSettings and ConnStrings that need no further explanation:</p><pre class="highlight"><code class="hljs cs"><span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> <span class="hljs-xmlDocTag">&lt;summary&gt;</span></span>
+<span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> Class to return the AppSettings.</span>
+<span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> <span class="hljs-xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> AppSettings
+{
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> Setting1
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> ConfigurationManager.AppSettings[<span class="hljs-string">"Setting1"</span>]; }
+    }
+    
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> Setting2
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> ConfigurationManager.AppSettings[<span class="hljs-string">"Setting2"</span>]; }
+    }
+}
+
+<span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> <span class="hljs-xmlDocTag">&lt;summary&gt;</span></span>
+<span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> Class to return the connection strings.</span>
+<span class="hljs-comment"><span class="hljs-xmlDocTag">///</span> <span class="hljs-xmlDocTag">&lt;/summary&gt;</span></span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> ConnStrings
+{
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> ConnStr1
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> ConfigurationManager.ConnectionStrings[<span class="hljs-string">"ConnStr1"</span>].ConnectionString; }
+    }
+    
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> ConnStr2
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> ConfigurationManager.ConnectionStrings[<span class="hljs-string">"ConnStr2"</span>].ConnectionString; }
+    }
+}</code></pre><p>These examples are created when you install ConfigZilla and are never
+overwritten, feel free to change or delete them as you see fit. The samples
+also contain two examples of custom configuration section handlers - a useful
+technique for grouping your application settings when they begin to grow.
+The ReportingSettings class looks like this:
+</p><pre class="highlight"><code class="hljs cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> ReportingSettings : ConfigurationSection
+{
+    <span class="hljs-comment">// The string is the name as it must appear in the .config file.</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> ReportingSettings Current = (ReportingSettings)ConfigurationManager.GetSection(<span class="hljs-string">"reportingSettings"</span>);
+    
+    [ConfigurationProperty(<span class="hljs-string">"PageSize"</span>, DefaultValue = <span class="hljs-string">"20"</span>)]
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> PageSize
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> (<span class="hljs-keyword">int</span>)<span class="hljs-keyword">base</span>[<span class="hljs-string">"PageSize"</span>]; }
+    }
+    
+    [ConfigurationProperty(<span class="hljs-string">"Server"</span>, DefaultValue = <span class="hljs-string">"http://example.com/ReportRequest"</span>)]
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> Server
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> (<span class="hljs-keyword">string</span>)<span class="hljs-keyword">base</span>[<span class="hljs-string">"Server"</span>]; }
+    }
+    
+    [ConfigurationProperty(<span class="hljs-string">"RecipientEmail"</span>, DefaultValue = <span class="hljs-string">"phil@example.com"</span>)]
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> RecipientEmail
+    {
+        <span class="hljs-keyword">get</span> { <span class="hljs-keyword">return</span> (<span class="hljs-keyword">string</span>)<span class="hljs-keyword">base</span>[<span class="hljs-string">"RecipientEmail"</span>]; }
+    }
+}
+</code></pre><p>and allows you to create custom configuration sections that use the "attributes"
+style:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">configSections</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">section</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"reportingSettings"</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"CZ.ReportingSettings, ConfigZilla"</span> <span class="hljs-attribute">requirePermission</span>=<span class="hljs-value">"false"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">configSections</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">reportingSettings</span> <span class="hljs-attribute">PageSize</span>=<span class="hljs-value">"20"</span> <span class="hljs-attribute">Server</span>=<span class="hljs-value">"http://Release.example.com"</span> <span class="hljs-attribute">RecipientEmail</span>=<span class="hljs-value">"phil@Release.example.com"</span> /&gt;</span>
+</code></pre><p>The PaymentSettings example class looks like this:
+</p><pre class="highlight"><code class="hljs cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> PaymentSettings : XmlDeserializeConfigSectionHandler
+{
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> PaymentSettings Current = (PaymentSettings)ConfigurationManager.GetSection(<span class="hljs-string">"PaymentSettings"</span>);
+    
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> PaymentSystem { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> URL { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> Timeout { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+}
+</code></pre><p>and allows you to create custom configuration sections that use the "elements" style:
+</p><pre class="highlight"><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">configSections</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">section</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"PaymentSettings"</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"CZ.PaymentSettings, ConfigZilla"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">configSections</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">PaymentSettings</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">PaymentSystem</span>&gt;</span>Wordlpay<span class="hljs-tag">&lt;/<span class="hljs-title">PaymentSystem</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">URL</span>&gt;</span>https://worldpay.releasemode.example.com<span class="hljs-tag">&lt;/<span class="hljs-title">URL</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">Timeout</span>&gt;</span>30<span class="hljs-tag">&lt;/<span class="hljs-title">Timeout</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">PaymentSettings</span>&gt;</span>
+</code></pre><p>For classes using this style (i.e. deriving from XmlDeserializeConfigSectionHandler) you
+can use validation attributes from the
+<a href="http://msdn.microsoft.com/en-us/library/system.componentmodel.dataannotations.aspx">System.ComponentModel.DataAnnotations</a>
+namespace as well as the <a href="http://msdn.microsoft.com/en-us/library/system.componentmodel.defaultvalueattribute(v=vs.100).aspx">DefaultValue</a>
+attribute.
+</p><p>For both of these last two custom sections, you refer to them in your C#
+using the static "Current" property:
+</p><pre class="highlight"><code class="hljs cs"><span class="hljs-keyword">string</span> url = CZ.PaymentSettings.Current.URL;
+</code></pre><p>The .Net configuration system is quite sophisticated, <a href="https://www.google.co.uk/search?q=c%23+custom+configuration+section+tutorial&oq=c%23+custom+con&aqs=chrome.4.69i57j69i58j0l4.5784j0j7&sourceid=chrome&espv=210&es_sm=122&ie=UTF-8">try Google</a>
+for more examples.
+
+</p><h3>Special considerations for web applications</h3><p>When you create a web application with Visual Studio it will create a
+Web.Debug.config and Web.Release.config file under your Web.config. These
+files are not needed anymore, you can just delete them.
+</p><p>Read the notes <a href="git.html">on setting up .gitignore</a> so you don't
+accidentally disable your site.</p><hr><a href="index.html">Table Of Contents</a><!--script.--><!--	window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"><\/script>')--><script  src="js/plugins.js"></script><script  src="js/main.js"></script><!-- Google Analytics: change UA-XXXXX-X to be your sites ID.--><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+e.src='//www.google-analytics.com/analytics.js';
+r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+ga('create','UA-XXXXX-X');ga('send','pageview');</script></body>
