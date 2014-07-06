@@ -42,7 +42,13 @@ namespace ConfigZilla.Tasks
 
             MissedProperties = new List<string>();
 
-            File.Delete(MergedXsltFileName);
+            // File.Delete is supposed to not throw an exception if the file does not exist,
+            // yet I seemed to have a case where it did, when I had manually deleted the
+            // bin folder from a project. Issue 1.
+            if (File.Exists(MergedXsltFileName))
+            {
+                File.Delete(MergedXsltFileName);
+            }
             string contents = GetMergedFile();
             WriteNewFile(contents);
 

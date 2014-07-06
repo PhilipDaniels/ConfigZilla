@@ -10,7 +10,7 @@
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <iconUrl>http://philipdaniels.com/configzilla/images/configzilla128x128.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <releaseNotes>Please see the project website for upgrade details. Upgrading to v2 is highly recommended.</releaseNotes>
+    <releaseNotes>This is a minor bug fix (Issue 1 on github), to ensure that generation of the merged Xslt does not fail and stop the build even if the bin or obj folder has been completely deleted.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>MSBuild, web.config, app.config, Xslt</tags>
   </metadata>
